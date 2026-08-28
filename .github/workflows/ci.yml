@@ -1,0 +1,68 @@
+name: ci
+
+on:
+  push: { branches: [main, "phase/**"] }
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --all-extras
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy src/recoup
+      - name: secret scan
+        uses: gitleaks/gitleaks-action@v2
+
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: recoup, POSTGRES_PASSWORD: recoup, POSTGRES_DB: recoup }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U recoup" --health-interval 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --all-extras
+      - run: uv run alembic upgrade head
+      - name: unit + property
+        run: uv run pytest -m "unit or property" -q --cov=src/recoup --cov-report=xml
+      - name: integration
+        run: uv run pytest -m integration -q
+      - name: chaos
+        run: uv run pytest -m chaos -q
+      - name: audit chain + replay equality
+        run: uv run python -m recoup.cli verify
+
+  models:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --all-extras
+      - name: retrain on seeded data and enforce metric gate
+        run: uv run python scripts/metric_gate.py   # fails if macro-F1 < .85, Brier > .12, Qini <= 0
+
+  llm-eval:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --all-extras
+      - name: grounded QA + PTP + message safety benchmarks
+        env: { ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}" }
+        run: uv run pytest -m llm_eval -q

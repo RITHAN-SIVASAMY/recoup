@@ -1,0 +1,43 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.uv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# env & secrets
+.env
+.env.local
+*.pem
+*.key
+
+# data & artifacts
+data/generated/
+ml/artifacts/
+ml/mlruns/
+*.joblib
+*.lgb
+voice/out/
+reports/
+
+# node
+node_modules/
+web/.next/
+web/out/
+.turbo/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# transient
+.wt
+*.tar.gz
