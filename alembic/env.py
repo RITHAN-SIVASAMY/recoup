@@ -9,6 +9,7 @@ from alembic import context
 from sqlalchemy import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
+from recoup.audit.schema import Base
 from recoup.settings import get_settings
 
 config = context.config
@@ -16,8 +17,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# No domain models exist yet (Phase 01 populates this); an empty baseline is correct here.
-target_metadata = None
+target_metadata = Base.metadata
 
 settings = get_settings()
 

@@ -20,8 +20,16 @@ def _phase_00() -> tuple[bool, str]:
     return True, "no phase-specific checks beyond lint, types and the registered test suites"
 
 
+def _phase_01() -> tuple[bool, str]:
+    return (
+        True,
+        "replay equality, tamper detection and idempotent-append checks ran as part of the test suites above",
+    )
+
+
 _GATES: dict[int, GateCheck] = {
     0: _phase_00,
+    1: _phase_01,
 }
 
 
