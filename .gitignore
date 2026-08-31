@@ -16,6 +16,9 @@ htmlcov/
 *.pem
 *.key
 
+# local-machine compose overrides (e.g. port remaps around a port conflict)
+docker-compose.override.yml
+
 # data & artifacts
 data/generated/
 ml/artifacts/

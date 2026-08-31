@@ -1,0 +1,11 @@
+{
+  "name": "recoup-web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Stub server. The Next.js dashboard and recovery microsite land in Phase 07 and Phase 11.",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "echo \"Next.js build lands in Phase 07\" && exit 0",
+    "start": "node server.js"
+  }
+}

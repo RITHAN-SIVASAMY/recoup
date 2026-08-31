@@ -15,6 +15,7 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy src/recoup
+      - run: uv run lint-imports
       - name: secret scan
         uses: gitleaks/gitleaks-action@v2
 
