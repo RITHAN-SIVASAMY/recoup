@@ -1,0 +1,15 @@
+# Merchant-tunable business policy — a merchant may loosen these, never the
+# constraints in regulatory.yaml. See docs/06-COMPLIANCE-MATRIX.md §2.
+
+version: 1
+merchant_id: demo
+
+economics:
+  ev_floor_inr: "5.00"
+
+approval:
+  value_threshold_inr: "15000"
+  always_require: [draft_formal_notice]
+
+exposure_cap_inr: "500000"
+kill_switch: false

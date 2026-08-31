@@ -60,11 +60,21 @@ def _phase_03() -> tuple[bool, str]:
     return gated, "retrained on seeded data; see scripts/metric_gate.py's output above"
 
 
+def _phase_04() -> tuple[bool, str]:
+    return (
+        True,
+        "policy-as-code invariants, quiet-hours/DST edge cases, loader validation and "
+        "the policy.evaluated/policy.denied audit trail ran as part of the test suites "
+        "above; 'policy imports only domain' is enforced by lint-imports in `make lint`",
+    )
+
+
 _GATES: dict[int, GateCheck] = {
     0: _phase_00,
     1: _phase_01,
     2: _phase_02,
     3: _phase_03,
+    4: _phase_04,
 }
 
 

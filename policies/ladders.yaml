@@ -1,0 +1,156 @@
+# Per-root-cause escalation ladders — FR-5.2. Merchant-tunable (unlike
+# regulatory.yaml), but `forbidden_actions` on the never-retry mandate causes
+# exists precisely so a merchant cannot loosen a regulatory constraint by
+# editing this file — the evaluator checks regulatory.never_retry_causes
+# independently of what's written here, and this list is the second, redundant
+# guard a property test asserts against directly.
+
+version: 1
+
+ladders:
+  bank_soft_decline:
+    description: "Generic soft decline. Often transient; a silent retry then a nudge."
+    steps:
+      - action: retry_charge
+        channels: null
+        wait_before: PT0S
+      - action: send_message
+        channels: [sms, whatsapp]
+        wait_before: PT6H
+      - action: stop
+        wait_before: P3D
+    forbidden_actions: []
+
+  insufficient_funds:
+    description: "Balance issue. Wait for a plausible salary-cycle window before nudging."
+    steps:
+      - action: send_message
+        channels: [sms, whatsapp]
+        wait_before: P1D
+      - action: send_message
+        channels: [whatsapp, email]
+        wait_before: P2D
+      - action: stop
+        wait_before: P5D
+    forbidden_actions: []
+
+  otp_timeout_or_auth_abandon:
+    description: "Auth step failed or was abandoned. A direct resume link, once."
+    steps:
+      - action: send_message
+        channels: [sms, whatsapp]
+        wait_before: PT30M
+      - action: stop
+        wait_before: P2D
+    forbidden_actions: []
+
+  network_or_gateway_error:
+    description: "Transient infra failure. Retry once, then a fallback nudge."
+    steps:
+      - action: retry_charge
+        channels: null
+        wait_before: PT5M
+      - action: send_message
+        channels: [sms]
+        wait_before: PT6H
+      - action: stop
+        wait_before: P2D
+    forbidden_actions: []
+
+  issuer_risk_block:
+    description: "Issuer-side risk hold. No blind retry — inform and let the issuer resolve it."
+    steps:
+      - action: send_message
+        channels: [sms, email]
+        wait_before: PT1H
+      - action: stop
+        wait_before: P3D
+    forbidden_actions: [retry_charge]
+
+  card_expired_or_invalid:
+    description: "Card needs updating before anything can succeed."
+    steps:
+      - action: send_message
+        channels: [sms, whatsapp]
+        wait_before: PT1H
+      - action: send_message
+        channels: [email]
+        wait_before: P2D
+      - action: stop
+        wait_before: P5D
+    forbidden_actions: [retry_charge]
+
+  mandate_revoked:
+    description: "Mandate revoked by customer or bank. Never retry — re-authorize only."
+    steps:
+      - action: send_reauth_link
+        channels: [whatsapp, sms, email]
+        wait_before: PT0S
+      - action: send_message
+        channels: [whatsapp, email]
+        wait_before: P2D
+      - action: stop
+        wait_before: P5D
+    forbidden_actions: [retry_charge]
+
+  mandate_insufficient_balance:
+    description: "Mandate technically active but underfunded. Never silently retry the debit."
+    steps:
+      - action: send_message
+        channels: [sms, whatsapp]
+        wait_before: P1D
+      - action: send_message
+        channels: [whatsapp, email]
+        wait_before: P2D
+      - action: stop
+        wait_before: P5D
+    forbidden_actions: [retry_charge]
+
+  mandate_technical_failure:
+    description: "Retryable mandate failure, within the regulatory cadence cap."
+    steps:
+      - action: retry_charge
+        channels: null
+        wait_before: P1D
+      - action: send_message
+        channels: [sms]
+        wait_before: P2D
+      - action: stop
+        wait_before: P4D
+    forbidden_actions: []
+
+  checkout_abandonment:
+    description: "Customer got distracted before paying. A quick, low-friction nudge."
+    steps:
+      - action: send_message
+        channels: [whatsapp, sms]
+        wait_before: PT2H
+      - action: send_message
+        channels: [email]
+        wait_before: P1D
+      - action: stop
+        wait_before: P3D
+    forbidden_actions: [voice_call, draft_formal_notice]
+
+  receivable_overdue:
+    description: "B2B invoice overdue. Escalates in tone; the last two steps need a human."
+    steps:
+      - action: send_message
+        channels: [email]
+        wait_before: PT0S
+      - action: send_message
+        channels: [email, whatsapp]
+        wait_before: P7D
+      - action: draft_formal_notice
+        channels: [email]
+        wait_before: P14D
+      - action: stop
+        wait_before: P30D
+    forbidden_actions: [voice_call]
+
+  unknown:
+    description: "Confidence floor missed (FR-2.6) — conservative ladder, human review only."
+    steps:
+      - action: stop
+        wait_before: PT0S
+    forbidden_actions: [retry_charge, voice_call, draft_formal_notice, send_reauth_link]

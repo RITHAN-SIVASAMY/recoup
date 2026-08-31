@@ -1,31 +1,20 @@
-"""Idempotency for staged actions: a deterministic key plus a Redis SETNX guard.
+"""Idempotency for staged actions: the deterministic key plus a Redis SETNX guard.
 
-The event store has its own idempotency mechanism (a unique DB index on
-`case_events.idempotency_key`, see `audit/event_store.py`) for deduplicating
-event appends. This module is the corresponding primitive for actions
-(retry, message, call) once the execution layer lands in Phase 05/06 — the
-Redis guard is the fast path, and a DB unique index is always the backstop.
+The key formula itself lives in `domain/idempotency.py` — `policy/` needs it too
+and may only import `domain`. The event store has its own idempotency mechanism
+(a unique DB index on `case_events.idempotency_key`, see `audit/event_store.py`)
+for deduplicating event appends; this module is the corresponding primitive for
+actions (retry, message, call) once the execution layer lands in Phase 05/06 —
+the Redis guard is the fast path, and a DB unique index is always the backstop.
 """
 
 from __future__ import annotations
 
-import hashlib
-
 from redis.asyncio import Redis
 
-from recoup.domain.canonical import canonical_json
+from recoup.domain.idempotency import idempotency_key
 
-
-def idempotency_key(case_id: str, action_type: str, ladder_step: int, policy_version: str) -> str:
-    material = canonical_json(
-        {
-            "case_id": case_id,
-            "action_type": action_type,
-            "ladder_step": ladder_step,
-            "policy_version": policy_version,
-        }
-    )
-    return hashlib.sha256(material).hexdigest()
+__all__ = ["RedisIdempotencyGuard", "idempotency_key"]
 
 
 class RedisIdempotencyGuard:

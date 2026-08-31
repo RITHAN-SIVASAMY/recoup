@@ -23,6 +23,17 @@ ResolutionState = Literal[
     "control_untouched",
 ]
 Cohort = Literal["treatment", "control"]
+Channel = Literal["sms", "whatsapp", "email", "voice"]
+ActionType = Literal[
+    "retry_charge",
+    "send_message",
+    "send_reauth_link",
+    "send_pre_debit_notice",
+    "voice_call",
+    "draft_formal_notice",
+    "stop",
+]
+PolicyDecision = Literal["ALLOW", "DENY", "REQUIRE_APPROVAL"]
 
 
 class Actor(BaseModel):
@@ -61,6 +72,31 @@ class CaseEvent(BaseModel):
     model_versions: dict[str, str] | None = None
     prev_hash: str
     hash: str
+
+
+class ProposedAction(BaseModel):
+    """A candidate action, not yet permitted. `policy.evaluate()` decides its fate."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    action_type: ActionType
+    channel: Channel | None = None
+    ladder_step: int = Field(ge=1)
+    scheduled_for: datetime
+    estimated_cost_inr: Decimal
+    expected_value_inr: Decimal
+
+
+class Verdict(BaseModel):
+    """The policy engine's output — pure, no I/O. See `policy/evaluator.py`."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    decision: PolicyDecision
+    rule_id: str
+    policy_version: str
+    reason: str
+    obligations: list[str] = Field(default_factory=list)
 
 
 class Case(BaseModel):

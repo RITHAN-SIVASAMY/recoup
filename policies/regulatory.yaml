@@ -1,0 +1,38 @@
+# Regulatory guardrails — see docs/06-COMPLIANCE-MATRIX.md.
+#
+# This file is privileged: it is NOT merchant-editable (docs/06-COMPLIANCE-MATRIX.md
+# §2 — a merchant can make Recoup gentler, never non-compliant). Changes here
+# require an ADR. Every constant below is a placeholder pending re-verification
+# against the currently effective NPCI/RBI/TRAI/DPDP instruments before any
+# production use — see docs/06-COMPLIANCE-MATRIX.md §5.
+
+version: 1
+
+quiet_hours:
+  # REG-COMM-01 — TRAI UCC/DND framework. Default permitted window 09:00-20:00 IST.
+  start: "09:00"
+  end: "20:00"
+  tz: "Asia/Kolkata"
+
+consent:
+  # REG-COMM-02 — DPDP Act 2023. Contact on a channel requires a recorded consent
+  # basis for that channel; absence of consent is a DENY, never a default-allow.
+  required_channels: [sms, whatsapp, email, voice]
+
+opt_out:
+  # REG-COMM-03 — TRAI + DPDP withdrawal of consent. Opt-out is immediate,
+  # permanent, and propagates across every case for that customer.
+  propagate_all_cases: true
+
+contact_fatigue:
+  # REG-COMM-06 — a per-customer rolling cap across ALL cases, not per-case.
+  max_contacts: 3
+  window: P30D
+
+mandate_retry:
+  # REG-MAND-01/02/03/05 — NPCI UPI Autopay / RBI e-mandate framework.
+  never_retry_causes: [mandate_revoked, mandate_insufficient_balance]
+  max_per_cycle: 3
+  min_gap: P1D
+  pre_debit_notice_required: true
+  afa_threshold_inr: 15000 # RBI e-mandate AFA threshold — verify current value
