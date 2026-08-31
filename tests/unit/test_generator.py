@@ -66,11 +66,27 @@ def test_ground_truth_fields_never_overlap_with_normalized_intake_fields() -> No
 
 
 def test_ground_truth_values_never_appear_in_the_ingested_payload() -> None:
-    batch = generate_batch(seed=42, n_cases=20)
-    ground_truth_keys = {"p_self_heal", "p_recover_by_channel"}
+    # Note: error_reason legitimately equals true_root_cause's string for the
+    # un-confused majority of cases (e.g. "insufficient_funds" is both a valid
+    # observable decline reason and a valid taxonomy label) — that's a strong
+    # feature, not a leak. The leakage contract is about *keys*, not incidental
+    # string equality, which is why this checks field names rather than searching
+    # the payload's JSON for the label text.
+    batch = generate_batch(seed=42, n_cases=50)
+    ground_truth_keys = {"p_self_heal", "p_recover_by_channel", "true_root_cause"}
 
     for intake, truth in zip(batch.intake, batch.ground_truth, strict=True):
         payload = intake.to_case_created_payload()
         assert not (ground_truth_keys & payload.keys())
         payload_json = json.dumps(payload)
         assert str(truth.p_self_heal) not in payload_json
+
+
+def test_every_payment_or_mandate_failure_case_has_a_true_root_cause() -> None:
+    batch = generate_batch(seed=42, n_cases=60)
+
+    for intake, truth in zip(batch.intake, batch.ground_truth, strict=True):
+        if intake.source_type in ("payment_failure", "mandate_failure"):
+            assert truth.true_root_cause is not None
+        else:
+            assert truth.true_root_cause is None

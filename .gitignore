@@ -21,12 +21,16 @@ docker-compose.override.yml
 
 # data & artifacts
 data/generated/
-ml/artifacts/
 ml/mlruns/
 *.joblib
 *.lgb
 voice/out/
 reports/
+
+# ml/artifacts/*.png and metrics.json ARE committed — 04-EXECUTION-PLAN.md's stack
+# rationale is explicit that artifacts a judge can read in the repo beat a server
+# they can't see, and the phase-03 DoD names the confusion matrix and calibration
+# plot specifically. Only the large, regenerable binaries above are excluded.
 
 # node
 node_modules/

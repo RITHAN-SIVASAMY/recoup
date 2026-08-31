@@ -53,8 +53,20 @@ jobs:
         with: { submodules: recursive }
       - uses: astral-sh/setup-uv@v3
       - run: uv sync --all-extras
-      - name: retrain on seeded data and enforce metric gate
-        run: uv run python scripts/metric_gate.py   # fails if macro-F1 < .85, Brier > .12, Qini <= 0
+      - name: train classifier, propensity and uplift on seeded data
+        run: |
+          uv run python ml/train_classifier.py
+          uv run python ml/train_propensity.py
+          uv run python ml/train_uplift.py
+      - name: enforce metric gate
+        run: uv run python scripts/metric_gate.py   # fails if macro-F1 < .85, Brier > .12, any AUC < .70, or Qini <= 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: model-cards-and-metrics
+          path: |
+            ml/cards/
+            ml/artifacts/**/metrics.json
+            ml/artifacts/**/*.png
 
   llm-eval:
     runs-on: ubuntu-latest

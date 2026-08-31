@@ -8,6 +8,7 @@ specific to one phase and cannot be expressed as a pytest marker.
 from __future__ import annotations
 
 import argparse
+import subprocess
 import sys
 from collections.abc import Callable
 
@@ -35,10 +36,35 @@ def _phase_02() -> tuple[bool, str]:
     )
 
 
+def _run(*args: str) -> bool:
+    result = subprocess.run(["uv", "run", "python", *args], check=False)
+    return result.returncode == 0
+
+
+def _phase_03() -> tuple[bool, str]:
+    # Genuinely phase-specific and not pytest-expressible: retrain on the seeded
+    # data and enforce the metric gate (macro-F1, Brier, AUC, Qini). Scoring
+    # correctness (model_versions recorded on every event, etc.) is covered by
+    # tests/integration/test_scoring.py in the test suites that already ran above
+    # — skipped rather than run if this is the very first `make gate PHASE=03` on
+    # a fresh clone, since the artifacts this script is about to produce don't
+    # exist yet at that point. Re-running the gate a second time exercises both.
+    trained = (
+        _run("ml/train_classifier.py")
+        and _run("ml/train_propensity.py")
+        and _run("ml/train_uplift.py")
+    )
+    if not trained:
+        return False, "model training failed — see the output above"
+    gated = _run("scripts/metric_gate.py")
+    return gated, "retrained on seeded data; see scripts/metric_gate.py's output above"
+
+
 _GATES: dict[int, GateCheck] = {
     0: _phase_00,
     1: _phase_01,
     2: _phase_02,
+    3: _phase_03,
 }
 
 

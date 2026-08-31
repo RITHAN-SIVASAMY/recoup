@@ -36,9 +36,11 @@ from recoup.data.distributions import (
     DECLINE_REASONS,
     ISSUERS,
     PAYMENT_METHODS,
-    UPLIFT_ARCHETYPES,
+    archetype_weights_for,
     day_of_month_weight,
     hour_of_day_weight,
+    mandate_root_cause,
+    noisy_root_cause_for_decline,
     weighted_choice,
 )
 from recoup.data.merchants import MERCHANT_PROFILES, MerchantProfile
@@ -53,13 +55,18 @@ _MAX_REJECTION_ATTEMPTS = 200
 
 
 class GroundTruth(BaseModel):
-    """Validation-only truth for a generated case. Never reaches a model at inference."""
+    """Validation-only truth for a generated case. Never reaches a model at inference.
+
+    `true_root_cause` is `None` for checkout_abandonment/receivable_overdue, where
+    source_type already determines it and there is nothing to classify.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     provider_event_id: str
     p_self_heal: float
     p_recover_by_channel: dict[str, float]
+    true_root_cause: str | None = None
 
 
 @dataclass(frozen=True)
@@ -86,14 +93,18 @@ def _random_occurred_at(rng: random.Random) -> datetime:
 
 
 def _ground_truth_values(rng: random.Random, archetype: str) -> tuple[float, dict[str, float]]:
+    # Within-archetype ranges are deliberately narrower than a first cut: too wide,
+    # and per-case p_self_heal is dominated by noise no feature could ever explain,
+    # capping propensity/uplift AUC near chance regardless of model quality. These
+    # are still ranges, not point values — real variance remains, just bounded.
     if archetype == "sure_thing":
-        p_self_heal, bump = rng.uniform(0.70, 0.95), rng.uniform(0.0, 0.03)
+        p_self_heal, bump = rng.uniform(0.75, 0.92), rng.uniform(0.0, 0.03)
     elif archetype == "lost_cause":
-        p_self_heal, bump = rng.uniform(0.02, 0.15), rng.uniform(0.0, 0.03)
+        p_self_heal, bump = rng.uniform(0.03, 0.11), rng.uniform(0.0, 0.03)
     elif archetype == "sleeping_dog":
-        p_self_heal, bump = rng.uniform(0.30, 0.50), rng.uniform(-0.08, -0.02)
+        p_self_heal, bump = rng.uniform(0.32, 0.46), rng.uniform(-0.08, -0.02)
     else:  # persuadable
-        p_self_heal, bump = rng.uniform(0.10, 0.40), rng.uniform(0.15, 0.45)
+        p_self_heal, bump = rng.uniform(0.14, 0.32), rng.uniform(0.28, 0.42)
 
     p_recover_by_channel = {
         channel: round(min(max(p_self_heal + bump * effectiveness, 0.0), 0.98), 4)
@@ -104,10 +115,11 @@ def _ground_truth_values(rng: random.Random, archetype: str) -> tuple[float, dic
 
 def _detail_for_source(
     rng: random.Random, source_type: str, seed: int, index: int, occurred_at: datetime
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], str | None]:
+    """Returns (detail for the ingested payload, true_root_cause for ground truth only)."""
     if source_type == "payment_failure":
         reason = weighted_choice(rng, DECLINE_REASONS)
-        return {
+        detail = {
             "order_id": f"order-{seed:04d}-{index:05d}",
             "method": weighted_choice(rng, PAYMENT_METHODS),
             "error_code": reason.upper(),
@@ -115,22 +127,39 @@ def _detail_for_source(
             "error_reason": reason,
             "issuer": weighted_choice(rng, ISSUERS),
         }
+        return detail, noisy_root_cause_for_decline(rng, reason)
     if source_type == "mandate_failure":
-        return {
+        true_root_cause = mandate_root_cause(rng)
+        # Two weakly-correlated observable signals, not a leak: a mandate that's
+        # failed many times in a row and is sitting "halted" skews toward
+        # "revoked"; one still-retrying failure skews toward "technical_failure".
+        # Both relationships are soft (randint spread, probabilistic status), same
+        # as the payment-failure confusion — the classifier has to learn the
+        # tendency from two noisy features together, not read off a single answer.
+        base_failures, halted_probability = {
+            "mandate_technical_failure": (1, 0.30),
+            "mandate_insufficient_balance": (3, 0.60),
+            "mandate_revoked": (5, 0.90),
+        }[true_root_cause]
+        consecutive_failures = max(1, base_failures + rng.randint(-1, 1))
+        mandate_detail: dict[str, Any] = {
             "plan_id": f"plan-{seed:04d}",
-            "status": "halted",
+            "status": "halted" if rng.random() < halted_probability else "pending",
             "charge_at": None,
             "issuer": weighted_choice(rng, ISSUERS),
+            "consecutive_failures": consecutive_failures,
         }
+        return mandate_detail, true_root_cause
     if source_type == "checkout_abandonment":
-        return {"initiated_method": weighted_choice(rng, PAYMENT_METHODS)}
+        return {"initiated_method": weighted_choice(rng, PAYMENT_METHODS)}, None
     if source_type == "receivable_overdue":
-        return {
+        receivable_detail: dict[str, Any] = {
             "invoice_id": f"INV-{seed:04d}-{index:05d}",
             "due_date": occurred_at.date().isoformat(),
             "terms": "net-30",
             "days_overdue": max((_BATCH_REFERENCE_DATE - occurred_at).days, 0),
         }
+        return receivable_detail, None
     raise ValueError(f"unknown source_type: {source_type!r}")
 
 
@@ -140,23 +169,31 @@ def _build_case(
     source_type = weighted_choice(rng, list(profile.source_type_weights.items()))
     occurred_at = _random_occurred_at(rng)
     provider_event_id = f"synthetic-{seed:04d}-{index:05d}"
+    detail, true_root_cause = _detail_for_source(rng, source_type, seed, index, occurred_at)
+    amount_at_risk = _random_amount(rng, profile.amount_range_inr)
 
     intake = NormalizedIntake(
         source_type=source_type,  # type: ignore[arg-type]
         provider_event_id=provider_event_id,
         merchant_id=profile.merchant_id,
-        amount_at_risk=_random_amount(rng, profile.amount_range_inr),
+        amount_at_risk=amount_at_risk,
         customer_ref=f"cust-{seed:04d}-{index:05d}",
         occurred_at=occurred_at,
-        detail=_detail_for_source(rng, source_type, seed, index, occurred_at),
+        detail=detail,
     )
 
-    archetype = weighted_choice(rng, UPLIFT_ARCHETYPES)
+    low, high = profile.amount_range_inr
+    relative_amount = float((amount_at_risk - low) / (high - low)) if high > low else 0.5
+    decline_reason = detail.get("error_reason") if source_type == "payment_failure" else None
+    archetype = weighted_choice(
+        rng, archetype_weights_for(source_type, relative_amount, decline_reason)
+    )
     p_self_heal, p_recover_by_channel = _ground_truth_values(rng, archetype)
     ground_truth = GroundTruth(
         provider_event_id=provider_event_id,
         p_self_heal=p_self_heal,
         p_recover_by_channel=p_recover_by_channel,
+        true_root_cause=true_root_cause,
     )
     return intake, ground_truth
 

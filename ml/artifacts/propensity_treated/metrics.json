@@ -1,0 +1,29 @@
+{
+  "model_version": "propensity-treated-ab7a6ecc289acb24",
+  "arm": "treated",
+  "feature_columns": [
+    "source_type",
+    "merchant_id",
+    "error_reason",
+    "mandate_status",
+    "method",
+    "issuer",
+    "amount_at_risk",
+    "relative_amount",
+    "hour_of_day",
+    "day_of_week",
+    "consecutive_failures",
+    "channel"
+  ],
+  "train_seed": 20260302,
+  "n_train": 8408,
+  "n_val": 1802,
+  "n_test": 1802,
+  "base_rate": 0.5161505161505161,
+  "auc_roc": 0.7051821298214462,
+  "pr_auc": 0.6733345094593607,
+  "gate": {
+    "auc_min": 0.7
+  },
+  "gate_passed": true
+}

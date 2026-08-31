@@ -1,0 +1,20 @@
+{
+  "model_version": "uplift-6fa3e335b1e58767",
+  "train_seed": 20260303,
+  "n_train": 16800,
+  "n_val": 3600,
+  "n_test": 3600,
+  "qini_coefficient": 47.31693551713826,
+  "uplift_at_top20pct": 0.32701345000810245,
+  "ground_truth_spearman": 0.4594309924965759,
+  "segment_counts_test": {
+    "persuadable": 2491,
+    "sure_thing": 415,
+    "lost_cause": 397,
+    "sleeping_dog": 297
+  },
+  "gate": {
+    "qini_min": 0.0
+  },
+  "gate_passed": true
+}
