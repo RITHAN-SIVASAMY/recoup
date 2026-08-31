@@ -83,6 +83,7 @@ strict = true
 minversion = "8.0"
 addopts = "-ra --strict-markers"
 testpaths = ["tests"]
+pythonpath = ["."]
 asyncio_mode = "auto"
 markers = [
     "unit: fast, pure, no I/O, frozen clock",

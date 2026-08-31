@@ -69,7 +69,12 @@ class Case(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     case_id: Ulid
+    merchant_id: str
     source_type: SourceType
+    provider_event_id: str
+    amount_at_risk: Decimal
+    currency: str = "INR"
+    customer_ref: str
     resolution_state: ResolutionState = "pending"
     cohort: Cohort | None = None
     root_cause: str | None = None

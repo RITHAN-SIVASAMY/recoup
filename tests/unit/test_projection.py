@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
+from tests.factories import case_created_payload
 
 from recoup.audit.hashchain import GENESIS_HASH, compute_hash
 from recoup.audit.projection import fold, project
@@ -34,7 +35,7 @@ def _event(case_id: str, seq: int, event_type: str, payload: dict, prev_hash: st
 
 def test_fold_applies_case_created_first() -> None:
     case_id = new_ulid()
-    created = _event(case_id, 1, "case.created", {"source_type": "payment_failure"}, GENESIS_HASH)
+    created = _event(case_id, 1, "case.created", case_created_payload(), GENESIS_HASH)
 
     case = fold(None, created)
 
@@ -55,7 +56,9 @@ def test_fold_rejects_a_non_created_event_with_no_prior_case() -> None:
 
 def test_project_folds_events_in_seq_order_regardless_of_input_order() -> None:
     case_id = new_ulid()
-    created = _event(case_id, 1, "case.created", {"source_type": "mandate_failure"}, GENESIS_HASH)
+    created = _event(
+        case_id, 1, "case.created", case_created_payload("mandate_failure"), GENESIS_HASH
+    )
     second = _event(case_id, 2, "case.exception", {}, created.hash)
 
     case_in_order = project([created, second])

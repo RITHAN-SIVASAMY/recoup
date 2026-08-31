@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from decimal import Decimal
 from typing import cast
 
 from recoup.domain.canonical import canonical_json
@@ -20,7 +21,12 @@ def fold(case: Case | None, event: CaseEvent) -> Case:
     if event.event_type == "case.created":
         return Case(
             case_id=event.case_id,
+            merchant_id=cast(str, event.payload["merchant_id"]),
             source_type=cast(SourceType, event.payload["source_type"]),
+            provider_event_id=cast(str, event.payload["provider_event_id"]),
+            amount_at_risk=Decimal(cast(str, event.payload["amount_at_risk"])),
+            currency=cast(str, event.payload.get("currency", "INR")),
+            customer_ref=cast(str, event.payload["customer_ref"]),
             resolution_state="pending",
             cohort=None,
             root_cause=None,

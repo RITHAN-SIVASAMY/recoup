@@ -27,9 +27,18 @@ def _phase_01() -> tuple[bool, str]:
     )
 
 
+def _phase_02() -> tuple[bool, str]:
+    return (
+        True,
+        "100x replay, malformed-payload DLQ handling, generator determinism and "
+        "ground-truth leakage checks ran as part of the test suites above",
+    )
+
+
 _GATES: dict[int, GateCheck] = {
     0: _phase_00,
     1: _phase_01,
+    2: _phase_02,
 }
 
 

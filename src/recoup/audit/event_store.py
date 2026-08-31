@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import select
@@ -12,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async
 from recoup.audit.hashchain import GENESIS_HASH, compute_hash
 from recoup.audit.projection import fold
 from recoup.audit.schema import CaseEventRow, CaseRow, case_row_to_domain, event_row_to_domain
+from recoup.domain.canonical import normalize
 from recoup.domain.ids import new_ulid
 from recoup.domain.models import Actor, Case, CaseEvent
 from recoup.settings import Settings, get_settings
@@ -35,6 +37,10 @@ class EventStore:
     ) -> CaseEvent:
         occurred_at = occurred_at or datetime.now(UTC)
         recorded_at = datetime.now(UTC)
+        # Normalize once, up front: payload must be JSON-native (Decimal -> str,
+        # datetime -> ISO) so the in-memory event is byte-identical to what a later
+        # fetch from the DB reconstructs — no drift between the two code paths.
+        payload = normalize(payload)
 
         async with self._sessionmaker() as session, session.begin():
             if idempotency_key is not None:
@@ -55,7 +61,14 @@ class EventStore:
                     )
                 case_row = CaseRow(
                     case_id=case_id,
+                    # Placeholder values, overwritten below by fold()'s case.created
+                    # handler before this transaction commits.
+                    merchant_id="",
                     source_type="unknown",
+                    provider_event_id="",
+                    amount_at_risk=Decimal(0),
+                    currency="INR",
+                    customer_ref="",
                     resolution_state="pending",
                     cohort=None,
                     root_cause=None,
@@ -111,7 +124,12 @@ class EventStore:
 
             domain_event = event_row_to_domain(event_row)
             updated_case = fold(current_case, domain_event)
+            case_row.merchant_id = updated_case.merchant_id
             case_row.source_type = updated_case.source_type
+            case_row.provider_event_id = updated_case.provider_event_id
+            case_row.amount_at_risk = updated_case.amount_at_risk
+            case_row.currency = updated_case.currency
+            case_row.customer_ref = updated_case.customer_ref
             case_row.resolution_state = updated_case.resolution_state
             case_row.cohort = updated_case.cohort
             case_row.root_cause = updated_case.root_cause

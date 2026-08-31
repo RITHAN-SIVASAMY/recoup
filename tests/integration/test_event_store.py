@@ -16,6 +16,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncEngine
+from tests.factories import case_created_payload
 
 from recoup.audit.event_store import EventStore, create_engine
 from recoup.audit.verify import verify_chain, verify_replay_equality
@@ -42,7 +43,7 @@ async def test_append_and_events_for_round_trip(engine: AsyncEngine) -> None:
     created = await store.append(
         case_id=case_id,
         event_type="case.created",
-        payload={"source_type": "payment_failure"},
+        payload=case_created_payload(),
         actor=SYSTEM,
     )
     second = await store.append(
@@ -65,7 +66,7 @@ async def test_duplicate_idempotency_key_produces_exactly_one_effect(engine: Asy
     await store.append(
         case_id=case_id,
         event_type="case.created",
-        payload={"source_type": "payment_failure"},
+        payload=case_created_payload(),
         actor=SYSTEM,
     )
     key = idempotency_key(case_id, "retry_charge", 1, "policy-v1")
@@ -98,7 +99,7 @@ async def test_concurrent_appends_to_one_case_produce_a_gapless_seq_with_no_lost
     await store.append(
         case_id=case_id,
         event_type="case.created",
-        payload={"source_type": "payment_failure"},
+        payload=case_created_payload(),
         actor=SYSTEM,
     )
 
@@ -128,7 +129,7 @@ async def test_replay_equality_holds_after_real_appends(engine: AsyncEngine) -> 
     await store.append(
         case_id=case_id,
         event_type="case.created",
-        payload={"source_type": "receivable_overdue"},
+        payload=case_created_payload("receivable_overdue"),
         actor=SYSTEM,
     )
     await store.append(case_id=case_id, event_type="case.exception", payload={}, actor=SYSTEM)
@@ -142,7 +143,7 @@ async def test_verify_chain_passes_after_real_appends(engine: AsyncEngine) -> No
     await store.append(
         case_id=case_id,
         event_type="case.created",
-        payload={"source_type": "checkout_abandonment"},
+        payload=case_created_payload("checkout_abandonment"),
         actor=SYSTEM,
     )
 
@@ -157,7 +158,7 @@ async def test_case_events_rejects_a_direct_update(engine: AsyncEngine) -> None:
     event = await store.append(
         case_id=case_id,
         event_type="case.created",
-        payload={"source_type": "payment_failure"},
+        payload=case_created_payload(),
         actor=SYSTEM,
     )
 

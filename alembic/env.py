@@ -9,7 +9,8 @@ from alembic import context
 from sqlalchemy import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-from recoup.audit.schema import Base
+from recoup.audit.schema import Base as AuditBase
+from recoup.ingestion.schema import Base as IngestionBase
 from recoup.settings import get_settings
 
 config = context.config
@@ -17,7 +18,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = Base.metadata
+target_metadata = [AuditBase.metadata, IngestionBase.metadata]
 
 settings = get_settings()
 

@@ -16,8 +16,8 @@ app = typer.Typer(add_completion=False, no_args_is_help=True)
 def demo(seed: int = 42) -> None:
     """Run the seeded batch end-to-end and print the headline block."""
     typer.secho(
-        "recoup demo: not implemented yet - ingestion (Phase 02), policy (Phase 04) and "
-        "measurement (Phase 10) all have to land before this can print real numbers.",
+        "recoup demo: not implemented yet - understanding (Phase 03), policy (Phase 04) and "
+        "measurement (Phase 10) all still have to land before this can print real numbers.",
         fg=typer.colors.RED,
         err=True,
     )

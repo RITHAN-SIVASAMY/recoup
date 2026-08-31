@@ -9,9 +9,10 @@ write path for case state.
 from __future__ import annotations
 
 from datetime import datetime
+from decimal import Decimal
 from typing import cast
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -26,7 +27,12 @@ class CaseRow(Base):
     __tablename__ = "cases"
 
     case_id: Mapped[str] = mapped_column(String(26), primary_key=True)
+    merchant_id: Mapped[str] = mapped_column(String(64))
     source_type: Mapped[str] = mapped_column(String(64))
+    provider_event_id: Mapped[str] = mapped_column(String(128))
+    amount_at_risk: Mapped[Decimal] = mapped_column(Numeric(14, 2))
+    currency: Mapped[str] = mapped_column(String(3))
+    customer_ref: Mapped[str] = mapped_column(String(128))
     resolution_state: Mapped[str] = mapped_column(String(32))
     cohort: Mapped[str | None] = mapped_column(String(16))
     root_cause: Mapped[str | None] = mapped_column(String(64))
@@ -49,7 +55,7 @@ class CaseEventRow(Base):
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     actor: Mapped[dict[str, str]] = mapped_column(JSONB)
-    event_type: Mapped[str] = mapped_column(String(128))
+    event_type: Mapped[str] = mapped_column(String(128), index=True)
     payload: Mapped[dict[str, object]] = mapped_column(JSONB)
     policy_version: Mapped[str | None] = mapped_column(String(64))
     model_versions: Mapped[dict[str, str] | None] = mapped_column(JSONB)
@@ -80,7 +86,12 @@ def case_row_to_domain(row: CaseRow) -> Case:
         raise ValueError(f"case {row.case_id} has no case.created event yet; not a valid Case")
     return Case(
         case_id=row.case_id,
+        merchant_id=row.merchant_id,
         source_type=cast(SourceType, row.source_type),
+        provider_event_id=row.provider_event_id,
+        amount_at_risk=row.amount_at_risk,
+        currency=row.currency,
+        customer_ref=row.customer_ref,
         resolution_state=cast(ResolutionState, row.resolution_state),
         cohort=cast("Cohort | None", row.cohort),
         root_cause=row.root_cause,
