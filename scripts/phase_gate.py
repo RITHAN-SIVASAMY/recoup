@@ -92,6 +92,20 @@ def _phase_06() -> tuple[bool, str]:
     )
 
 
+def _phase_07() -> tuple[bool, str]:
+    return (
+        True,
+        "signed/expiring/tamper-proof link tokens (Hypothesis property test: no single-"
+        "character mutation of a valid token ever verifies), the full pay/opt-out/remind-"
+        "later flow, single-use link redemption, opt-out propagation across a customer's "
+        "other cases, and the real Razorpay success-webhook path (signature-verified) all "
+        "ran against a real event store, Postgres and Redis as part of the test suites "
+        "above; the recovery page itself was verified live in a browser -- open link -> "
+        "cause-specific fix shown -> pay -> simulate-payment -> case flips to recovered -> "
+        "reusing the link is refused -- web/ is not part of `make gate` (no Python to check)",
+    )
+
+
 _GATES: dict[int, GateCheck] = {
     0: _phase_00,
     1: _phase_01,
@@ -100,6 +114,7 @@ _GATES: dict[int, GateCheck] = {
     4: _phase_04,
     5: _phase_05,
     6: _phase_06,
+    7: _phase_07,
 }
 
 

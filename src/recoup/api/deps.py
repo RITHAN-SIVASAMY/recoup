@@ -12,6 +12,9 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from recoup.audit.event_store import EventStore, create_engine
 from recoup.execution.approvals import ApprovalStore
+from recoup.execution.links import LinkRedemptionStore
+from recoup.execution.optout import OptOutStore
+from recoup.execution.payment_links import PaymentLinkPort, SimulatorPaymentLinkPort
 from recoup.execution.staging import StagingStore
 from recoup.policy.loader import PolicyLoader
 from recoup.policy.schema import PolicyBundle
@@ -33,6 +36,20 @@ def get_staging_store() -> StagingStore:
 
 def get_approval_store() -> ApprovalStore:
     return ApprovalStore(get_engine())
+
+
+def get_link_redemption_store() -> LinkRedemptionStore:
+    return LinkRedemptionStore(get_engine())
+
+
+def get_optout_store() -> OptOutStore:
+    return OptOutStore(get_engine())
+
+
+def get_payment_link_port() -> PaymentLinkPort:
+    # No live Razorpay credentials are configured in this environment; the
+    # simulator is ADR-0006's own default, not merely a test fallback.
+    return SimulatorPaymentLinkPort(get_settings().public_base_url)
 
 
 @lru_cache

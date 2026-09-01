@@ -40,9 +40,19 @@ def fold(case: Case | None, event: CaseEvent) -> Case:
             f"cannot apply {event.event_type!r} to case {event.case_id}: "
             "no case.created event has been folded yet"
         )
-    return case.model_copy(
-        update={"updated_at": event.occurred_at, "seq": event.seq, "tip_hash": event.hash}
-    )
+
+    update: dict[str, object] = {
+        "updated_at": event.occurred_at,
+        "seq": event.seq,
+        "tip_hash": event.hash,
+    }
+    if event.event_type == "case.classified":
+        update["root_cause"] = event.payload["root_cause"]
+    elif event.event_type == "case.abandoned_uneconomic":
+        update["resolution_state"] = "abandoned_uneconomic"
+    elif event.event_type == "payment.recovered":
+        update["resolution_state"] = "recovered"
+    return case.model_copy(update=update)
 
 
 def project(events: Sequence[CaseEvent]) -> Case:
