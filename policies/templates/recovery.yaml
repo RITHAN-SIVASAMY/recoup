@@ -1,0 +1,30 @@
+# REG-COMM-04: recovery messages are transactional/service-category. This file
+# holds only that class — a promotional template would be a separate,
+# non-recovery file, never mixed in here.
+
+version: 1
+
+templates:
+  send_message:
+    category: transactional
+    sender_identity: "{merchant_name} via Recoup"
+    opt_out_affordance: "Reply STOP to opt out."
+    max_length: 320
+
+  send_reauth_link:
+    category: transactional
+    sender_identity: "{merchant_name} via Recoup"
+    opt_out_affordance: "Reply STOP to opt out."
+    max_length: 320
+
+  send_pre_debit_notice:
+    category: transactional
+    sender_identity: "{merchant_name} via Recoup"
+    opt_out_affordance: "Reply STOP to opt out."
+    max_length: 320
+
+  voice_call:
+    category: transactional
+    sender_identity: "{merchant_name} via Recoup"
+    opt_out_affordance: "Say 'stop' at any time to opt out."
+    max_length: 480

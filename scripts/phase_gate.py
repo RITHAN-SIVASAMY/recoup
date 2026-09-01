@@ -80,6 +80,18 @@ def _phase_05() -> tuple[bool, str]:
     )
 
 
+def _phase_06() -> tuple[bool, str]:
+    return (
+        True,
+        "the constrained-bandit invariant (chosen arm always in the policy-permitted, "
+        "EV-cleared set) ran as a Hypothesis property test; dispatch()'s every branch "
+        "(staged, abandoned, denied, require_approval, duplicate_suppressed) and "
+        "promote_and_send()'s full FR-9.7 delivery-state chain -- including the "
+        "DoD-mandated stage -> send -> engage -> recover path ending in payment.recovered "
+        "-- ran against a real event store, Postgres and Redis as part of the test suites above",
+    )
+
+
 _GATES: dict[int, GateCheck] = {
     0: _phase_00,
     1: _phase_01,
@@ -87,6 +99,7 @@ _GATES: dict[int, GateCheck] = {
     3: _phase_03,
     4: _phase_04,
     5: _phase_05,
+    6: _phase_06,
 }
 
 

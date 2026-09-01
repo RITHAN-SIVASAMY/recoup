@@ -3,14 +3,18 @@
 `expected_value` is the pure arithmetic (`docs/01-FRD.md` FR-4.2, exactly):
 `EV = uplift * amount_at_risk * margin - channel_cost - goodwill_cost(contact_n)`.
 
-`select_action_or_abandon` is the one I/O-touching orchestrator: for every
-channel the case's current ladder step permits, it prices a candidate, writes
-an `ev.computed` event with the full inputs (economics/ev.py owns this per
+`price_ladder_step` is the one I/O-touching orchestrator: for every channel
+the case's current ladder step permits, it prices a candidate and writes an
+`ev.computed` event with the full inputs (economics/ev.py owns this per
 context/phase-05-economics-and-authority.md's own checklist — unlike
 `policy/evaluate()`, Economics is not import-linter-restricted to `domain`
-only), and returns the highest-EV candidate. If nothing clears the merchant's
-EV floor, the case terminates `abandoned_uneconomic` with the full ledger
-recorded, and nothing is proposed to the policy engine at all.
+only). `select_action_or_abandon` (Phase 05's original entry point) picks the
+highest-EV candidate from it and abandons if nothing clears the floor;
+`price_ladder_step` is also called directly by Phase 06's dispatcher, which
+needs the *full* priced candidate list so its bandit can choose among every
+EV-cleared, policy-permitted arm rather than only the single EV-argmax one
+(FR-9.2) — both paths write each `ev.computed` event exactly once, since
+pricing only ever happens inside this one function.
 """
 
 from __future__ import annotations
@@ -40,7 +44,7 @@ def expected_value(
 
 
 @dataclass(frozen=True)
-class _Candidate:
+class PricedCandidate:
     action: ProposedAction
     ev_inr: Decimal
     channel_cost_inr: Decimal
@@ -69,7 +73,7 @@ def _build_candidates(
     ]
 
 
-async def select_action_or_abandon(
+async def price_ladder_step(
     event_store: EventStore,
     *,
     case: Case,
@@ -81,12 +85,9 @@ async def select_action_or_abandon(
     economics: MerchantEconomics,
     policy_version: str,
     now: datetime,
-) -> ProposedAction | None:
+) -> list[PricedCandidate]:
     bare_candidates = _build_candidates(case, ladder, ladder_step_reached, now)
-    if not bare_candidates:
-        return None
-
-    priced: list[_Candidate] = []
+    priced: list[PricedCandidate] = []
     for candidate in bare_candidates:
         cost = channel_cost(candidate.action_type, candidate.channel, economics)
         goodwill = (
@@ -102,7 +103,7 @@ async def select_action_or_abandon(
             goodwill_cost_inr=goodwill,
         )
         priced.append(
-            _Candidate(
+            PricedCandidate(
                 action=candidate.model_copy(
                     update={"estimated_cost_inr": cost, "expected_value_inr": ev}
                 ),
@@ -128,28 +129,71 @@ async def select_action_or_abandon(
             actor=_SYSTEM,
             policy_version=policy_version,
         )
+    return priced
 
-    best = max(priced, key=lambda c: c.ev_inr)
-    if best.ev_inr < economics.ev_floor_inr:
-        await event_store.append(
-            case_id=case.case_id,
-            event_type="case.abandoned_uneconomic",
-            payload={
-                "ev_floor_inr": economics.ev_floor_inr,
-                "ledger": [
-                    {
-                        "action_type": c.action.action_type,
-                        "channel": c.action.channel,
-                        "ev_inr": c.ev_inr,
-                        "channel_cost_inr": c.channel_cost_inr,
-                        "goodwill_cost_inr": c.goodwill_cost_inr,
-                    }
-                    for c in priced
-                ],
-            },
-            actor=_SYSTEM,
-            policy_version=policy_version,
-        )
+
+async def abandon_if_uneconomic(
+    event_store: EventStore,
+    case: Case,
+    priced: list[PricedCandidate],
+    economics: MerchantEconomics,
+    policy_version: str,
+) -> bool:
+    """Writes `case.abandoned_uneconomic` with the full ledger and returns
+    True iff every priced candidate is below the EV floor (or there were none
+    at all — an exhausted ladder proposes nothing and abandons nothing; see
+    the caller, which only reaches here with a non-empty `priced`)."""
+    if not priced or max(c.ev_inr for c in priced) >= economics.ev_floor_inr:
+        return False
+    await event_store.append(
+        case_id=case.case_id,
+        event_type="case.abandoned_uneconomic",
+        payload={
+            "ev_floor_inr": economics.ev_floor_inr,
+            "ledger": [
+                {
+                    "action_type": c.action.action_type,
+                    "channel": c.action.channel,
+                    "ev_inr": c.ev_inr,
+                    "channel_cost_inr": c.channel_cost_inr,
+                    "goodwill_cost_inr": c.goodwill_cost_inr,
+                }
+                for c in priced
+            ],
+        },
+        actor=_SYSTEM,
+        policy_version=policy_version,
+    )
+    return True
+
+
+async def select_action_or_abandon(
+    event_store: EventStore,
+    *,
+    case: Case,
+    ladder: Ladder,
+    ladder_step_reached: int,
+    uplift: Decimal,
+    relationship_weight: float,
+    contacts_sent: int,
+    economics: MerchantEconomics,
+    policy_version: str,
+    now: datetime,
+) -> ProposedAction | None:
+    priced = await price_ladder_step(
+        event_store,
+        case=case,
+        ladder=ladder,
+        ladder_step_reached=ladder_step_reached,
+        uplift=uplift,
+        relationship_weight=relationship_weight,
+        contacts_sent=contacts_sent,
+        economics=economics,
+        policy_version=policy_version,
+        now=now,
+    )
+    if not priced:
         return None
-
-    return best.action
+    if await abandon_if_uneconomic(event_store, case, priced, economics, policy_version):
+        return None
+    return max(priced, key=lambda c: c.ev_inr).action
