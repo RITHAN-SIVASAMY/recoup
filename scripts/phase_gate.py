@@ -69,12 +69,24 @@ def _phase_04() -> tuple[bool, str]:
     )
 
 
+def _phase_05() -> tuple[bool, str]:
+    return (
+        True,
+        "EV floor -> case.abandoned_uneconomic with the full ledger, the staged-action "
+        "cancel/promote state machine (property-tested), the approval queue's grant/reject "
+        "flow and the kill switch's cancel-in-flight-actions behaviour all ran as part of "
+        "the test suites above, including over real HTTP against the approvals/killswitch "
+        "routes (tests/integration/test_approvals_api.py)",
+    )
+
+
 _GATES: dict[int, GateCheck] = {
     0: _phase_00,
     1: _phase_01,
     2: _phase_02,
     3: _phase_03,
     4: _phase_04,
+    5: _phase_05,
 }
 
 

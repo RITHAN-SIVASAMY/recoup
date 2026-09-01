@@ -6,10 +6,26 @@ merchant_id: demo
 
 economics:
   ev_floor_inr: "5.00"
+  margin: "0.85"              # fraction of amount_at_risk that counts as recovered value (FR-4.2)
+  channel_costs_inr:
+    sms: "0.20"
+    whatsapp: "0.35"
+    email: "0.05"
+    voice: "3.00"              # per call, modeled as ~1 minute average
+  human_review_cost_inr: "25.00"   # one human-review minute (FR-4.1), shown on the decision card
+  goodwill:
+    base_inr: "0.50"
+    growth_rate: "0.6"          # each additional contact multiplies goodwill cost by (1 + growth_rate)
 
 approval:
   value_threshold_inr: "15000"
   always_require: [draft_formal_notice]
 
+staging:
+  contact_undo_window: PT60S    # FR-7.2 default: 60s for contact actions
+  money_undo_window: PT5M       # FR-7.2 default: 5min for money-moving actions
+
 exposure_cap_inr: "500000"
+daily_spend_cap_inr: "10000"
+daily_contact_cap: 200
 kill_switch: false

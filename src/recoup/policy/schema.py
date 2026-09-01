@@ -102,10 +102,21 @@ class LaddersPolicy(BaseModel):
     ladders: dict[str, Ladder]
 
 
+class GoodwillCurve(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    base_inr: Decimal
+    growth_rate: Decimal = Field(ge=0)
+
+
 class MerchantEconomics(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     ev_floor_inr: Decimal
+    margin: Decimal = Field(gt=0, le=1)
+    channel_costs_inr: dict[Channel, Decimal]
+    human_review_cost_inr: Decimal
+    goodwill: GoodwillCurve
 
 
 class MerchantApproval(BaseModel):
@@ -115,6 +126,18 @@ class MerchantApproval(BaseModel):
     always_require: list[ActionType] = Field(default_factory=list)
 
 
+class MerchantStaging(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    contact_undo_window: timedelta
+    money_undo_window: timedelta
+
+    @field_validator("contact_undo_window", "money_undo_window", mode="before")
+    @classmethod
+    def _parse_window(cls, value: object) -> object:
+        return parse_duration(value) if isinstance(value, str) else value
+
+
 class MerchantPolicy(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -122,7 +145,10 @@ class MerchantPolicy(BaseModel):
     merchant_id: str
     economics: MerchantEconomics
     approval: MerchantApproval
+    staging: MerchantStaging
     exposure_cap_inr: Decimal
+    daily_spend_cap_inr: Decimal | None = None
+    daily_contact_cap: int | None = None
     kill_switch: bool = False
 
 

@@ -10,6 +10,7 @@ from sqlalchemy import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from recoup.audit.schema import Base as AuditBase
+from recoup.execution.schema import Base as ExecutionBase
 from recoup.ingestion.schema import Base as IngestionBase
 from recoup.settings import get_settings
 
@@ -18,7 +19,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = [AuditBase.metadata, IngestionBase.metadata]
+target_metadata = [AuditBase.metadata, IngestionBase.metadata, ExecutionBase.metadata]
 
 settings = get_settings()
 
