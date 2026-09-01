@@ -60,7 +60,7 @@ The authority boundary is written down as a table in [`docs/01-FRD.md` §11](doc
 
 ## Stack
 
-Python 3.12 · FastAPI · Pydantic v2 · SQLAlchemy 2 · Postgres 16 · Redis · arq · LightGBM · SHAP · statsmodels · Claude (Anthropic API) · edge-tts + faster-whisper · Next.js 15 · Tailwind + shadcn/ui · Docker Compose · GitHub Actions · Hypothesis
+Python 3.12 · FastAPI · Pydantic v2 · SQLAlchemy 2 · Postgres 16 · Redis · arq · LightGBM · SHAP · statsmodels · Claude (Anthropic API) · edge-tts + faster-whisper · Next.js 16 · Tailwind + shadcn/ui · Docker Compose · GitHub Actions · Hypothesis
 
 Deliberately **not** used: an agent framework, a vector database, Kafka, microservices, Streamlit — each with a reason in [`docs/03-ARCHITECTURE.md` §12](docs/03-ARCHITECTURE.md).
 
