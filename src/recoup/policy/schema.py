@@ -138,6 +138,22 @@ class MerchantStaging(BaseModel):
         return parse_duration(value) if isinstance(value, str) else value
 
 
+class MerchantMeasurement(BaseModel):
+    """FR-13.4/13.5: the merchant-tunable half of the holdout's guardrails.
+    `salt` seeds the cohort hash (`docs/05-EVALUATION-PROTOCOL.md` §2:
+    "seeded hash of case_id + salt") -- changing it re-randomizes every
+    future assignment, so it is versioned in the same policy_version hash as
+    everything else here, not a free-floating secret.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    value_cap_inr: Decimal  # FR-13.4: above this, a case is always treated
+    default_holdout_rate: Decimal = Field(ge=0, le=1)
+    holdout_floor_rate: Decimal = Field(ge=0, le=1)
+    salt: str
+
+
 class MerchantPolicy(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -146,6 +162,7 @@ class MerchantPolicy(BaseModel):
     economics: MerchantEconomics
     approval: MerchantApproval
     staging: MerchantStaging
+    measurement: MerchantMeasurement
     exposure_cap_inr: Decimal
     daily_spend_cap_inr: Decimal | None = None
     daily_contact_cap: int | None = None

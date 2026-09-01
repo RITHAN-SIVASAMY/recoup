@@ -46,7 +46,9 @@ def fold(case: Case | None, event: CaseEvent) -> Case:
         "seq": event.seq,
         "tip_hash": event.hash,
     }
-    if event.event_type == "case.classified":
+    if event.event_type == "case.cohort_assigned":
+        update["cohort"] = event.payload["cohort"]
+    elif event.event_type == "case.classified":
         update["root_cause"] = event.payload["root_cause"]
     elif event.event_type == "case.abandoned_uneconomic":
         update["resolution_state"] = "abandoned_uneconomic"

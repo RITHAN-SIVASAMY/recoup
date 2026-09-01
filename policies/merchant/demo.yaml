@@ -25,6 +25,12 @@ staging:
   contact_undo_window: PT60S    # FR-7.2 default: 60s for contact actions
   money_undo_window: PT5M       # FR-7.2 default: 5min for money-moving actions
 
+measurement:
+  value_cap_inr: "50000"        # FR-13.4: above this, a case is always treated, never held out
+  default_holdout_rate: "0.20"  # FR-13/§2: 20% at batch start
+  holdout_floor_rate: "0.05"    # FR-13.5/§6: decays toward this floor once the effect is established
+  salt: "recoup-cohort-v1"      # bump to re-randomize every future assignment
+
 exposure_cap_inr: "500000"
 daily_spend_cap_inr: "10000"
 daily_contact_cap: 200
