@@ -123,6 +123,24 @@ def _phase_08() -> tuple[bool, str]:
     )
 
 
+def _phase_09() -> tuple[bool, str]:
+    return (
+        True,
+        "the citation-validation invariant (a grounded answer's inline [event:...] markers "
+        "and structured citations list must agree exactly, and every citation must be a "
+        "subset of the events actually retrieved) is proven as a Hypothesis property test "
+        "independent of any hand-picked example; ask()'s 3-tier retrieval fallback, the "
+        "two-layer refusal contract (retrieval-empty refuses without ever calling the model; "
+        "a model refusal that still carries citations is treated as untrustworthy and falls "
+        "back to a deterministic summary), and drafter-unavailable degrading to a plain "
+        "event-log summary all ran against a real event store and Postgres as part of the "
+        "test suites above; the 40-question grounded-qa golden set "
+        "(tests/llm_eval/grounded_qa.jsonl) checks zero fabricated or cross-case citations "
+        "and a >=95% refusal rate on its deliberately-unanswerable half, gated on a live "
+        "API key like the rest of tests/llm_eval",
+    )
+
+
 _GATES: dict[int, GateCheck] = {
     0: _phase_00,
     1: _phase_01,
@@ -133,6 +151,7 @@ _GATES: dict[int, GateCheck] = {
     6: _phase_06,
     7: _phase_07,
     8: _phase_08,
+    9: _phase_09,
 }
 
 

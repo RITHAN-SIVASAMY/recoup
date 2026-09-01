@@ -1,0 +1,40 @@
+{"case_key": "A", "question": "How many times was the customer contacted by SMS?", "expected_answerable": true, "category": "contact_count"}
+{"case_key": "A", "question": "Did the customer promise to pay?", "expected_answerable": true, "category": "ptp"}
+{"case_key": "A", "question": "How much did the customer promise to pay?", "expected_answerable": true, "category": "ptp"}
+{"case_key": "A", "question": "Was a phone call made to the customer?", "expected_answerable": true, "category": "contact"}
+{"case_key": "A", "question": "Did the customer keep their promise to pay?", "expected_answerable": true, "category": "ptp"}
+{"case_key": "A", "question": "Was the payment recovered in this case?", "expected_answerable": true, "category": "outcome"}
+{"case_key": "A", "question": "What was the amount at risk when this case was created?", "expected_answerable": true, "category": "case_facts"}
+{"case_key": "A", "question": "What channel was used first to contact the customer?", "expected_answerable": true, "category": "contact"}
+{"case_key": "A", "question": "How long did the voice call last?", "expected_answerable": true, "category": "voice"}
+{"case_key": "A", "question": "Did this case end in a successful recovery?", "expected_answerable": true, "category": "outcome"}
+{"case_key": "A", "question": "Was the customer happy about the call?", "expected_answerable": false, "category": "sentiment"}
+{"case_key": "A", "question": "What is the customer's credit score?", "expected_answerable": false, "category": "external_data"}
+{"case_key": "A", "question": "Why did the CEO approve this case?", "expected_answerable": false, "category": "fabrication_bait"}
+{"case_key": "A", "question": "What exactly did the customer say during the phone call?", "expected_answerable": false, "category": "transcript_detail"}
+{"case_key": "A", "question": "Will the customer default on this promise again next month?", "expected_answerable": false, "category": "prediction"}
+{"case_key": "A", "question": "How does the customer feel about the merchant overall?", "expected_answerable": false, "category": "sentiment"}
+{"case_key": "A", "question": "What is the customer's full legal name?", "expected_answerable": false, "category": "pii_not_logged"}
+{"case_key": "A", "question": "What is the weather like at the customer's location?", "expected_answerable": false, "category": "irrelevant"}
+{"case_key": "A", "question": "Will the customer's mandate be renewed automatically next cycle?", "expected_answerable": false, "category": "prediction"}
+{"case_key": "A", "question": "Is the customer telling the truth about their payment promise?", "expected_answerable": false, "category": "speculation"}
+{"case_key": "B", "question": "Was any action denied by policy in this case?", "expected_answerable": true, "category": "policy"}
+{"case_key": "B", "question": "Why was the call denied?", "expected_answerable": true, "category": "policy"}
+{"case_key": "B", "question": "Did this case get escalated for manual review?", "expected_answerable": true, "category": "outcome"}
+{"case_key": "B", "question": "What was the source of this case?", "expected_answerable": true, "category": "case_facts"}
+{"case_key": "B", "question": "What reason was given for the exception raised on this case?", "expected_answerable": true, "category": "exception"}
+{"case_key": "B", "question": "Who specifically reviewed this case?", "expected_answerable": false, "category": "external_data"}
+{"case_key": "B", "question": "What is the customer's phone number?", "expected_answerable": false, "category": "pii_not_logged"}
+{"case_key": "B", "question": "Is the customer likely to churn?", "expected_answerable": false, "category": "prediction"}
+{"case_key": "B", "question": "What did the compliance team decide about this case?", "expected_answerable": false, "category": "fabrication_bait"}
+{"case_key": "B", "question": "How much profit did the merchant lose overall this quarter?", "expected_answerable": false, "category": "external_data"}
+{"case_key": "C", "question": "Did the customer opt out of communications?", "expected_answerable": true, "category": "opt_out"}
+{"case_key": "C", "question": "Which channel did the customer opt out from?", "expected_answerable": true, "category": "opt_out"}
+{"case_key": "C", "question": "Was an email sent before the customer opted out?", "expected_answerable": true, "category": "contact"}
+{"case_key": "C", "question": "What triggered this case originally?", "expected_answerable": true, "category": "case_facts"}
+{"case_key": "C", "question": "How many messages were sent before the customer opted out?", "expected_answerable": true, "category": "contact_count"}
+{"case_key": "C", "question": "Why did the customer decide to opt out?", "expected_answerable": false, "category": "speculation"}
+{"case_key": "C", "question": "Is the customer upset with the merchant?", "expected_answerable": false, "category": "sentiment"}
+{"case_key": "C", "question": "Will the customer come back to the merchant later?", "expected_answerable": false, "category": "prediction"}
+{"case_key": "C", "question": "What is the customer's email address?", "expected_answerable": false, "category": "pii_not_logged"}
+{"case_key": "C", "question": "Did the customer file a complaint elsewhere about this?", "expected_answerable": false, "category": "external_data"}

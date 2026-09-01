@@ -46,3 +46,17 @@ class PTPExtraction(BaseModel):
     promised_date: date | None = None
     condition: str | None = None
     confidence: float = Field(ge=0.0, le=1.0)
+
+
+class GroundedAnswer(BaseModel):
+    """FR-14.5/14.6: the raw model output, *before* `audit/qa.py` validates
+    every citation against the events actually retrieved — a citation to an
+    ID the model wasn't given, or to one that doesn't exist, fails the whole
+    answer, never just that one claim."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    answer: str
+    citations: list[str]
+    refused: bool
+    refusal_reason: str | None = None
