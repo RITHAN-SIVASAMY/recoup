@@ -34,6 +34,10 @@ ml = [
     "numpy>=2.1",
     "matplotlib>=3.9",
 ]
+voice = [
+    "edge-tts>=7.0",
+    "faster-whisper>=1.0",
+]
 dev = [
     "ruff>=0.8",
     "mypy>=1.13",

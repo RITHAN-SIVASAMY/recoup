@@ -52,6 +52,10 @@ def fold(case: Case | None, event: CaseEvent) -> Case:
         update["resolution_state"] = "abandoned_uneconomic"
     elif event.event_type == "payment.recovered":
         update["resolution_state"] = "recovered"
+    elif event.event_type == "ptp.captured":
+        update["resolution_state"] = "awaiting_promise"  # FR-11.2: visible, never silently idle
+    elif event.event_type == "ptp.broken":
+        update["resolution_state"] = "pending"  # re-open; the promise no longer suspends anything
     return case.model_copy(update=update)
 
 

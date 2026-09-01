@@ -6,9 +6,13 @@ a model. FR-8.1's real inputs (historical order value, tenure, payment reliabili
 support history, contract size, renewal proximity) all require repeat-customer
 history this synthetic batch does not have — every `customer_ref` here is unique.
 `relationship_weight` stands in as a crude, honest proxy (relative deal size)
-until real customer history exists to train something better; `trust_score`
-defaults to a neutral prior because promise-to-pay tracking (FR-11, Phase 08)
-doesn't exist yet to have earned or lost any trust.
+until real customer history exists to train something better.
+
+`trust_score` defaults to a neutral prior, but as of Phase 08 a real one can be
+passed in: `understanding.trust.TrustScoreStore.score_for(customer_ref)` is the
+durable, promise-keeping-history-backed value FR-11.4 describes (kept promises
+raise it, broken ones lower it) — fetching it is a caller decision (this
+function stays pure/sync, no I/O), not something this module does itself.
 """
 
 from __future__ import annotations
@@ -30,8 +34,10 @@ class RelationshipScore:
     heuristic: bool = True  # always True in this build — see module docstring
 
 
-def score_relationship(*, merchant_id: str, amount_at_risk: Decimal | float) -> RelationshipScore:
+def score_relationship(
+    *, merchant_id: str, amount_at_risk: Decimal | float, trust_score: float = NEUTRAL_TRUST_SCORE
+) -> RelationshipScore:
     weight = relative_amount(merchant_id, float(amount_at_risk))
     if merchant_id == _B2B_MERCHANT_ID:
         weight = min(1.0, weight + _B2B_WEIGHT_BONUS)
-    return RelationshipScore(relationship_weight=weight, trust_score=NEUTRAL_TRUST_SCORE)
+    return RelationshipScore(relationship_weight=weight, trust_score=trust_score)

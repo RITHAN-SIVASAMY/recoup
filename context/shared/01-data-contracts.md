@@ -23,8 +23,11 @@ class CaseEvent(BaseModel):
 **Event type vocabulary** (extend deliberately, never ad hoc):
 `case.created` · `case.classified` · `case.scored` · `case.cohort_assigned` · `ev.computed` ·
 `policy.evaluated` · `policy.denied` · `approval.requested` · `approval.granted` · `approval.rejected` ·
-`action.staged` · `action.cancelled` · `action.sent` · `action.delivered` · `action.engaged` · `action.suppressed_duplicate` ·
-`ptp.captured` · `ptp.kept` · `ptp.broken` · `payment.recovered` · `case.stopped` · `case.abandoned_uneconomic` ·
+`action.staged` · `action.cancelled` · `action.sent` · `action.delivered` · `action.engaged` · `action.bounced` ·
+`action.failed` · `action.suppressed_duplicate` ·
+`link.viewed` · `link.method_switched` · `customer.opted_out` · `case.remind_later` ·
+`voice.call_started` · `voice.turn` · `voice.call_ended` ·
+`ptp.captured` · `ptp.kept` · `ptp.partial` · `ptp.broken` · `payment.recovered` · `case.stopped` · `case.abandoned_uneconomic` ·
 `case.exception` · `event.duplicate_suppressed` · `killswitch.engaged`
 
 ## Verdict (policy engine output — pure, no I/O)

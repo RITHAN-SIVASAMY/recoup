@@ -9,6 +9,7 @@ to the deterministic path and set degraded_mode").
 
 from __future__ import annotations
 
+from datetime import date
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -31,3 +32,17 @@ class DraftedCopy(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     body: str = Field(min_length=1, max_length=480)
+
+
+class PTPExtraction(BaseModel):
+    """FR-11.1: the raw extraction, *before* the confidence threshold is
+    applied — `has_commitment=False` means no promise was made at all
+    (distinct from one that was made but is too vague to act on)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    has_commitment: bool
+    amount_inr: Decimal | None = None
+    promised_date: date | None = None
+    condition: str | None = None
+    confidence: float = Field(ge=0.0, le=1.0)

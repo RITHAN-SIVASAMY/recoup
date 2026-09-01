@@ -1,0 +1,62 @@
+{"utterance": "I'll pay the full 1500 rupees by January 15th.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Yes, I can clear this by February 3rd, no problem.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "I will make the payment of 2200 on the 10th of this month.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Sure, I'll settle the 899 rupees by March 1st.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "I can pay 3000 rupees on the 20th, that works for me.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Okay, I'll transfer 650 by the 12th of next month.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "I'll clear the whole 1200 rupees on January 25th, that's a promise.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Fine, 4500 rupees, I'll pay it on the 8th.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Haan main 1500 rupaye 15 January tak de dunga.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Theek hai, main 2000 rupaye 20 tareekh ko pay kar dunga.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Main poora 899 amount 5 February tak clear kar dunga.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Haan bilkul, 3000 rupaye 10 tareekh tak de doonga, pakka.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Main 650 rupaye is mahine ki 28 tareekh tak pay kar dunga.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Ok, 1200 rupaye 3 March ko de dunga, wada raha.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Main 2500 rupaye 7 tareekh tak zaroor pay kar dunga.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "Haan 999 rupaye 14 January tak de dunga, confirm hai.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_absolute"}
+{"utterance": "I'll pay it tomorrow, the full amount.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_relative"}
+{"utterance": "Main kal 1500 rupaye de dunga, poora amount.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_relative"}
+{"utterance": "I'll clear it day after tomorrow, 2000 rupees.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_relative"}
+{"utterance": "Main parso 899 rupaye pay kar dunga, pakka wada.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_relative"}
+{"utterance": "I'll pay by next Friday, the full 3200.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_relative"}
+{"utterance": "Main agle Friday tak 3200 rupaye de dunga.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_relative"}
+{"utterance": "I'll settle it by the end of this week, 1800 rupees.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_relative"}
+{"utterance": "Is hafte ke end tak 1800 rupaye clear kar dunga.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_relative"}
+{"utterance": "I'll pay next Monday, that's five days from now, 2600 rupees.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_relative"}
+{"utterance": "Agle hafte tak main 2600 rupaye de doonga, pakka.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "clear_relative"}
+{"utterance": "No, I can't pay this, I don't have the money.", "language": "en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_refusal"}
+{"utterance": "Nahi, mere paas paise nahi hain abhi.", "language": "hi-en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_refusal"}
+{"utterance": "I'm not going to pay this, I never ordered it.", "language": "en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_refusal"}
+{"utterance": "Maine yeh order kiya hi nahi, main kyun pay karu.", "language": "hi-en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_refusal"}
+{"utterance": "I refuse to pay, this charge is wrong.", "language": "en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_refusal"}
+{"utterance": "Bilkul nahi, yeh charge galat hai, main dispute karunga.", "language": "hi-en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_refusal"}
+{"utterance": "I already paid this last week, check your records.", "language": "en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_refusal"}
+{"utterance": "Maine already pay kar diya hai pichle hafte, check kijiye.", "language": "hi-en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_refusal"}
+{"utterance": "What is this call even about?", "language": "en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_offtopic"}
+{"utterance": "Yeh call kis baare mein hai?", "language": "hi-en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_offtopic"}
+{"utterance": "Can you tell me the order number again?", "language": "en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_offtopic"}
+{"utterance": "Mujhe order number dobara bata dijiye.", "language": "hi-en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_offtopic"}
+{"utterance": "Who is this calling, is this really the company?", "language": "en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_offtopic"}
+{"utterance": "Yeh sach mein company se call hai kya?", "language": "hi-en", "expected_has_commitment": false, "expected_high_confidence": null, "category": "no_commitment_offtopic"}
+{"utterance": "I'll pay soon, don't worry about it.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "vague"}
+{"utterance": "Main jaldi hi pay kar dunga, tension mat lo.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "vague"}
+{"utterance": "I'll try to pay in a few days.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "vague"}
+{"utterance": "Kuch dinon mein try karunga pay karne ka.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "vague"}
+{"utterance": "I might be able to pay sometime this month.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "vague"}
+{"utterance": "Shayad is mahine mein kabhi pay kar paunga.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "vague"}
+{"utterance": "I'll sort it out eventually, just give me some time.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "vague"}
+{"utterance": "Thoda time do, main sort kar lunga eventually.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "vague"}
+{"utterance": "I'll pay by Friday if my salary comes in on time.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "conditional"}
+{"utterance": "Agar salary aa gayi toh Friday tak de dunga.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "conditional"}
+{"utterance": "If I get my refund from the other order, I'll pay this immediately.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "conditional"}
+{"utterance": "Agar refund mil gaya toh turant pay kar dunga.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "conditional"}
+{"utterance": "I can pay only if you waive the late fee, otherwise not sure.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "conditional"}
+{"utterance": "Late fee waive karo tabhi pay kar sakta hoon, warna pata nahi.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "conditional"}
+{"utterance": "I can pay half now, 750 rupees, and the rest next month.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "partial"}
+{"utterance": "Aadha abhi de sakta hoon, 750 rupaye, baaki agle mahine.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "partial"}
+{"utterance": "I'll pay 1000 out of the 2000 now, and figure out the rest later.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "partial"}
+{"utterance": "1000 abhi de dunga 2000 mein se, baaki baad mein dekhta hoon.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": false, "category": "partial"}
+{"utterance": "I'll pay by Friday — actually no, Monday would be better for me.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "corrected"}
+{"utterance": "Friday tak de dunga — nahi actually, Monday better rahega.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "corrected"}
+{"utterance": "Let's say the 10th, no wait, make it the 12th, 1500 rupees.", "language": "en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "corrected"}
+{"utterance": "10 tareekh bol raha tha, nahi 12 tareekh rakhte hain, 1500 rupaye.", "language": "hi-en", "expected_has_commitment": true, "expected_high_confidence": true, "category": "corrected"}

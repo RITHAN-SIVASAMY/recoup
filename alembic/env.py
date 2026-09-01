@@ -13,13 +13,19 @@ from recoup.audit.schema import Base as AuditBase
 from recoup.execution.schema import Base as ExecutionBase
 from recoup.ingestion.schema import Base as IngestionBase
 from recoup.settings import get_settings
+from recoup.understanding.schema import Base as UnderstandingBase
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = [AuditBase.metadata, IngestionBase.metadata, ExecutionBase.metadata]
+target_metadata = [
+    AuditBase.metadata,
+    IngestionBase.metadata,
+    ExecutionBase.metadata,
+    UnderstandingBase.metadata,
+]
 
 settings = get_settings()
 
