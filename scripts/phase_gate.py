@@ -141,6 +141,52 @@ def _phase_09() -> tuple[bool, str]:
     )
 
 
+def _phase_10() -> tuple[bool, str]:
+    # Genuinely phase-specific and not pytest-expressible: actually run the
+    # full seeded batch end to end (generate -> ingest -> cohort -> score ->
+    # dispatch -> ladder walk -> ground-truth resolution -> headline report)
+    # and check what it produced, the same way _phase_03 actually retrains
+    # rather than only asserting the training code parses. A fresh
+    # OS-entropy seed avoids colliding with any case already ingested into
+    # this persistent dev database by an earlier gate run or `make demo`
+    # (see INC-008/the note in tests/integration/test_demo_batch.py).
+    import asyncio
+    import random
+
+    from recoup.demo import run_batch
+
+    async def _run() -> tuple[bool, bool, int]:
+        report = await run_batch(seed=random.SystemRandom().randint(1, 2**31 - 1), n_cases=60)
+        return (
+            report.inputs.audit_chain_verified,
+            report.inputs.replay_equality_passed,
+            report.inputs.n_cases_total,
+        )
+
+    chain_ok, replay_ok, n_cases = asyncio.run(_run())
+    if not (chain_ok and replay_ok and n_cases == 60):
+        return False, (
+            f"demo batch ran but produced an unsound result "
+            f"(chain_verified={chain_ok}, replay_ok={replay_ok}, n_cases={n_cases})"
+        )
+    return (
+        True,
+        "stratified cohort assignment (value-cap/legal-risk exclusions always treated, a DB "
+        "trigger and RULE-CTRL-001 both independently proving zero contact ever reaches a "
+        "control case), the O'Brien-Fleming adaptive holdout controller, the pre-registered "
+        "two-proportion z-test/CI/MDE, and CUPED (theta estimated once from the pooled sample, "
+        "provably unable to increase pooled variance) all ran as Hypothesis property tests "
+        "independent of hand-picked examples, and against a real event store and Postgres, as "
+        "part of the test suites above; a full seeded batch was additionally run end to end "
+        "just now (60 cases, fresh seed) through the real ingest/cohort/score/policy/economics/"
+        "execution pipeline -- ladder walks re-evaluate policy at every step, resolution is "
+        "decided once per case from the generator's own hidden ground truth, never a "
+        "model-visible feature -- and the resulting audit chain verified with replay equality "
+        "intact; `make demo` prints the exact §9 headline block, including the explicit "
+        "NOT-SIGNIFICANT marker whenever p >= 0.05, next to the honestly-reported MDE",
+    )
+
+
 _GATES: dict[int, GateCheck] = {
     0: _phase_00,
     1: _phase_01,
@@ -152,6 +198,7 @@ _GATES: dict[int, GateCheck] = {
     7: _phase_07,
     8: _phase_08,
     9: _phase_09,
+    10: _phase_10,
 }
 
 

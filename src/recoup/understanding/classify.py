@@ -13,6 +13,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -35,12 +36,22 @@ class ClassificationResult:
     cold_start: bool  # always True in this build — see the classifier's model card
 
 
+@lru_cache
 def _classifier_model_version() -> str | None:
     metrics_path = Path("ml/artifacts/classifier/metrics.json")
     if not metrics_path.exists():
         return None
     version = json.loads(metrics_path.read_text(encoding="utf-8")).get("model_version")
     return str(version) if version is not None else None
+
+
+@lru_cache
+def _classifier_explainer() -> shap.TreeExplainer:
+    # Building a TreeExplainer parses the whole tree ensemble; it doesn't
+    # change between calls (classifier_model() is itself cached), so
+    # reconstructing it per-classification made every call pay that cost
+    # again for no reason -- the dominant cost in a batch of any size.
+    return shap.TreeExplainer(classifier_model())
 
 
 def classify(
@@ -84,7 +95,7 @@ def classify(
     if confidence < CONFIDENCE_FLOOR:
         root_cause = "unknown"
 
-    explainer = shap.TreeExplainer(model)
+    explainer = _classifier_explainer()
     shap_values = explainer.shap_values(row[FEATURE_COLUMNS])
     if hasattr(shap_values, "ndim") and shap_values.ndim == 3:
         per_class = shap_values[0, :, best_index]

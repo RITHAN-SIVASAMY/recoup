@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +24,7 @@ class PropensityResult:
     model_version_treated: str
 
 
+@lru_cache
 def _model_version(arm: str) -> str:
     metrics_path = Path(f"ml/artifacts/propensity_{arm}/metrics.json")
     return str(json.loads(metrics_path.read_text(encoding="utf-8"))["model_version"])

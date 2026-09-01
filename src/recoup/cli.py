@@ -3,25 +3,39 @@
 from __future__ import annotations
 
 import asyncio
+from pathlib import Path
 
 import typer
 
 from recoup.audit.event_store import create_engine
 from recoup.audit.verify import verify_chain, verify_replay_equality
+from recoup.demo import run_batch
+from recoup.measurement.report import render_headline_block, to_json, to_markdown
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 
+_REPORTS_DIR = Path("data/reports")
+
 
 @app.command()
-def demo(seed: int = 42) -> None:
+def demo(seed: int = 42, cases: int = 500) -> None:
     """Run the seeded batch end-to-end and print the headline block."""
-    typer.secho(
-        "recoup demo: not implemented yet - policy (Phase 04), economics (Phase 05) and "
-        "measurement (Phase 10) all still have to land before this can print real numbers.",
-        fg=typer.colors.RED,
-        err=True,
-    )
-    raise typer.Exit(code=1)
+    report = asyncio.run(run_batch(seed=seed, n_cases=cases))
+    block = render_headline_block(report)
+    typer.echo(block)
+
+    _REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    batch_id = report.inputs.batch_id
+    (_REPORTS_DIR / f"{batch_id}.json").write_text(to_json(report), encoding="utf-8")
+    (_REPORTS_DIR / f"{batch_id}.md").write_text(to_markdown(report), encoding="utf-8")
+    typer.echo(f"\nwrote {_REPORTS_DIR / f'{batch_id}.json'} and {_REPORTS_DIR / f'{batch_id}.md'}")
+
+    if not report.significance.significant:
+        typer.secho(
+            "NOTE: the incremental lift is NOT statistically significant at this batch size "
+            f"(p={report.significance.p_value:.4f}); the MDE above is the honest bound.",
+            fg=typer.colors.YELLOW,
+        )
 
 
 @app.command()
