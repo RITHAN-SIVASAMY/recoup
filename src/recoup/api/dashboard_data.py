@@ -102,10 +102,21 @@ async def _work_queue_item(event_store: EventStore, case: Case) -> WorkQueueItem
 
 
 async def work_queue(
-    event_store: EventStore, *, merchant_id: str | None = None, limit: int = 50
+    event_store: EventStore,
+    *,
+    merchant_id: str | None = None,
+    limit: int = 50,
+    candidate_pool: int = 300,
 ) -> list[WorkQueueItem]:
+    """`candidate_pool` bounds how many of the most-recently-created pending
+    cases get their events fetched and ranked -- separate from `limit` (how
+    many make the final list) so this stays fast regardless of how much
+    history has accumulated, without silently changing what "top N by EV"
+    means for a normal, bounded batch."""
     cases = await event_store.all_cases(merchant_id=merchant_id)
-    pending = [c for c in cases if c.resolution_state == "pending" and c.cohort == "treatment"]
+    pending = [c for c in cases if c.resolution_state == "pending" and c.cohort == "treatment"][
+        :candidate_pool
+    ]
     items = await _gather_bounded(_work_queue_item(event_store, c) for c in pending)
     ranked = sorted(
         (item for item in items if item is not None),

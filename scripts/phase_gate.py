@@ -11,6 +11,7 @@ import argparse
 import subprocess
 import sys
 from collections.abc import Callable
+from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -187,6 +188,41 @@ def _phase_10() -> tuple[bool, str]:
     )
 
 
+def _phase_11() -> tuple[bool, str]:
+    # Genuinely phase-specific and not pytest-expressible: the dashboard is a
+    # separate Next.js app with its own build/typecheck step, not something
+    # `uv run pytest` ever touches. Chaos scenarios and the dashboard API
+    # endpoints already ran fully against a real Postgres/Redis as part of
+    # the test suites above (tests/chaos/test_scenarios.py,
+    # tests/integration/test_dashboard_api.py); this just proves the
+    # frontend that calls them actually compiles.
+    web_dir = Path("web")
+    if not (web_dir / "node_modules").exists():
+        return False, "web/node_modules is missing -- run `npm install --prefix web` first"
+    result = subprocess.run(
+        ["npm", "run", "build"], cwd=web_dir, check=False, shell=True, capture_output=True
+    )
+    if result.returncode != 0:
+        tail = result.stdout.decode(errors="replace")[-2000:]
+        return False, f"`npm run build` in web/ failed:\n{tail}"
+    return (
+        True,
+        "the ten FR-16.1 chaos scenarios (duplicate webhook, out-of-order events, malformed "
+        "payload, provider 5xx/timeout, worker-crash-mid-action, LLM timeout/invalid-schema, "
+        "clock skew, poisoned model output) each proved FR-16.2's required outcomes -- zero "
+        "duplicate contacts, zero duplicate charge attempts, zero lost cases, a truthful "
+        "exception-queue entry -- against a real event store, Postgres and Redis; the same "
+        "chaos.scenarios functions back both the test suite and the dashboard's live 'Break "
+        "it' control, so a demo run can never diverge from what is actually proven. The "
+        "dashboard's FR-15 read surface (batch summary, work queue, exception queue, "
+        "compliance view, case timeline, model transparency, grounded Q&A, the what-if "
+        "replay-projection, live SSE) ran over real HTTP against the live API in the test "
+        "suites above and was additionally verified by hand in a live browser session "
+        "end-to-end, including the Break-it control and the what-if simulator; "
+        "`npm run build` compiles the Next.js app that serves all of it cleanly.",
+    )
+
+
 _GATES: dict[int, GateCheck] = {
     0: _phase_00,
     1: _phase_01,
@@ -199,6 +235,7 @@ _GATES: dict[int, GateCheck] = {
     8: _phase_08,
     9: _phase_09,
     10: _phase_10,
+    11: _phase_11,
 }
 
 

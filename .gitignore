@@ -37,6 +37,7 @@ reports/
 node_modules/
 web/.next/
 web/out/
+web/tsconfig.tsbuildinfo
 .turbo/
 
 # os / editor

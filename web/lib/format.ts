@@ -1,0 +1,38 @@
+/** Indian digit grouping (##,##,###), matching the backend's own
+ * `measurement.report.format_inr_whole` exactly -- never `Number()`/float
+ * conversion, since these strings can carry more precision than a JS
+ * double should be trusted with. */
+export function formatInr(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return "—";
+  const [whole, ] = String(value).split(".");
+  const negative = whole.startsWith("-");
+  const digits = negative ? whole.slice(1) : whole;
+  let grouped: string;
+  if (digits.length <= 3) {
+    grouped = digits;
+  } else {
+    const last3 = digits.slice(-3);
+    let rest = digits.slice(0, -3);
+    const parts: string[] = [];
+    while (rest.length > 2) {
+      parts.unshift(rest.slice(-2));
+      rest = rest.slice(0, -2);
+    }
+    if (rest) parts.unshift(rest);
+    grouped = [...parts, last3].join(",");
+  }
+  return `₹ ${negative ? "-" : ""}${grouped}`;
+}
+
+export function formatPercent(value: number | null | undefined, digits = 1): string {
+  if (value === null || value === undefined) return "—";
+  return `${value >= 0 ? "+" : ""}${value.toFixed(digits)}%`;
+}
+
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}

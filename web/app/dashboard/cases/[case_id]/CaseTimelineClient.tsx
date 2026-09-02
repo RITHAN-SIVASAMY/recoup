@@ -1,0 +1,109 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Badge, Card, EmptyState } from "@/components/ui";
+import { fetchCaseTimeline, type CaseEventRow, type CaseTimeline } from "@/lib/dashboard-api";
+import { formatDate, formatInr } from "@/lib/format";
+
+const EVENT_TONE: Record<string, "good" | "bad" | "warn" | "info" | "neutral"> = {
+  "payment.recovered": "good",
+  "case.exception": "bad",
+  "policy.denied": "warn",
+  "case.abandoned_uneconomic": "warn",
+  "action.sent": "info",
+  "action.engaged": "info",
+  "case.cohort_assigned": "neutral",
+};
+
+function summaryLine(event: CaseEventRow): string {
+  const p = event.payload;
+  switch (event.event_type) {
+    case "case.created":
+      return `Case created — ${p.source_type} — ${formatInr(String(p.amount_at_risk ?? ""))} at risk`;
+    case "case.cohort_assigned":
+      return `Cohort assigned: ${p.cohort}${p.excluded_from_control ? " (excluded from control)" : ""}`;
+    case "case.classified":
+      return `Classified: ${p.root_cause} (confidence ${Number(p.confidence).toFixed(2)})`;
+    case "case.scored":
+      return `Scored: uplift ${Number(p.uplift).toFixed(3)}, segment ${p.uplift_segment}`;
+    case "ev.computed":
+      return `EV computed for ${p.action_type}${p.channel ? "/" + p.channel : ""}: ₹${p.ev_inr}`;
+    case "policy.evaluated":
+      return `Policy evaluated: ${p.decision} (${p.rule_id})`;
+    case "policy.denied":
+      return `Denied — ${p.rule_id}: ${p.reason}`;
+    case "action.staged":
+      return `Staged: ${p.action_type}${p.channel ? "/" + p.channel : ""}`;
+    case "action.sent":
+      return `Sent via ${p.channel}`;
+    case "action.delivered":
+      return "Delivered";
+    case "action.engaged":
+      return "Customer engaged";
+    case "action.cancelled":
+      return `Cancelled — ${p.reason ?? ""}`;
+    case "case.abandoned_uneconomic":
+      return `Abandoned — below EV floor (₹${p.ev_floor_inr})`;
+    case "payment.recovered":
+      return `Payment recovered (via ${p.via ?? "unknown"})`;
+    case "case.exception":
+      return `Exception at ${p.stage ?? "?"}: ${p.error ?? p.reason ?? "unspecified"}`;
+    case "case.measurement_resolved":
+      return `Measurement resolution: ${p.resolved ? "resolved" : "not resolved"}`;
+    case "ptp.captured":
+      return `Promise to pay captured: ₹${p.amount} by ${p.promised_date}`;
+    default:
+      return event.event_type;
+  }
+}
+
+export function CaseTimelineClient({ caseId }: { caseId: string }) {
+  const [data, setData] = useState<CaseTimeline | "not_found" | null>(null);
+
+  useEffect(() => {
+    fetchCaseTimeline(caseId)
+      .then(setData)
+      .catch(() => setData("not_found"));
+  }, [caseId]);
+
+  if (data === null) return <EmptyState>Loading…</EmptyState>;
+  if (data === "not_found") return <EmptyState>Case not found.</EmptyState>;
+
+  const { case: c, events } = data;
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <div className="flex flex-wrap gap-2">
+          <Badge tone="info">{c.source_type}</Badge>
+          <Badge>{c.resolution_state}</Badge>
+          {c.cohort && <Badge tone={c.cohort === "control" ? "warn" : "good"}>{c.cohort}</Badge>}
+          {c.root_cause && <Badge tone="neutral">{c.root_cause}</Badge>}
+          <Badge tone="neutral">{formatInr(c.amount_at_risk)}</Badge>
+        </div>
+      </Card>
+
+      <Card title={`Timeline — ${events.length} events`}>
+        <ol className="relative space-y-4 border-l border-black/10 pl-4">
+          {events.map((event) => (
+            <li key={event.event_id} className="relative">
+              <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-black/30" />
+              <div className="flex flex-wrap items-baseline gap-2">
+                <Badge tone={EVENT_TONE[event.event_type] ?? "neutral"}>{event.event_type}</Badge>
+                <span className="text-xs text-black/40">{formatDate(event.occurred_at)}</span>
+                <span className="text-xs text-black/40">seq {event.seq}</span>
+              </div>
+              <p className="mt-1 text-sm text-black/80">{summaryLine(event)}</p>
+              <details className="mt-1">
+                <summary className="cursor-pointer text-xs text-black/40">raw payload</summary>
+                <pre className="mt-1 overflow-x-auto rounded bg-black/[0.03] p-2 text-xs text-black/60">
+                  {JSON.stringify(event.payload, null, 2)}
+                </pre>
+              </details>
+            </li>
+          ))}
+        </ol>
+      </Card>
+    </div>
+  );
+}

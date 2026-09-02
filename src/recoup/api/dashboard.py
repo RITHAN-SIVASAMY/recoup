@@ -24,7 +24,6 @@ from recoup.api.deps import get_engine, get_event_store, get_policy, get_redis
 from recoup.audit.event_store import EventStore
 from recoup.audit.projection import project
 from recoup.audit.qa import ask
-from recoup.audit.verify import verify_chain, verify_replay_equality
 from recoup.chaos import scenarios as chaos_scenarios
 from recoup.policy.schema import PolicyBundle
 
@@ -51,20 +50,26 @@ def _row(obj: object, fields: list[str]) -> dict[str, object]:
 @router.get("/summary")
 async def batch_summary(
     event_store: Annotated[EventStore, Depends(get_event_store)],
-    engine: Annotated[AsyncEngine, Depends(get_engine)],
 ) -> dict[str, object]:
     # Single-tenant demo build: one policy ("demo") governs cases carrying
     # several different business-profile merchant_id labels (demo-d2c,
     # demo-subscription, demo-b2b from the generator) -- so dashboard reads
     # never filter by merchant_id, they read every case there is.
+    #
+    # Audit-chain/replay status is read from the stored batch report (verified
+    # once, when `make demo` produced it) rather than re-verified live here:
+    # a full-log scan over this dev database's entire accumulated history
+    # takes tens of seconds and answers a different question than "is the
+    # batch this panel is showing trustworthy" -- `recoup verify` / `make
+    # verify` is the tool for "is the whole log intact right now".
     report = dashboard_data.latest_batch_report()
     states = await dashboard_data.cases_by_state(event_store)
-    chain = await verify_chain(engine)
-    replay_ok = await verify_replay_equality(engine) if chain.verified else False
+    chain_verified = bool(report.get("audit_chain_verified")) if report else False
+    replay_ok = bool(report.get("replay_equality_passed")) if report else False
     return {
         "batch_report": report,  # None if `make demo` hasn't run yet -- shown as-is, never faked
         "cases_by_state": states,
-        "audit_chain_verified": chain.verified,
+        "audit_chain_verified": chain_verified,
         "replay_equality_passed": replay_ok,
     }
 

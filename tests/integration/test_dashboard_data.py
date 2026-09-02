@@ -139,9 +139,9 @@ async def test_work_queue_ranks_by_expected_value_and_skips_unscored_cases(
 
     # the shared dev database accumulates pending cases across every test run
     # in this suite (same convention as the rest of this codebase); a large
-    # limit is needed so this specific case isn't pushed out by unrelated
-    # history that happens to have a higher EV.
-    queue = await work_queue(store, merchant_id=_MERCHANT_ID, limit=100_000)
+    # candidate_pool is needed so this specific case isn't excluded before
+    # ranking even starts by unrelated history sitting ahead of it.
+    queue = await work_queue(store, merchant_id=_MERCHANT_ID, limit=100_000, candidate_pool=100_000)
     queue_ids = {item.case_id for item in queue}
     assert scored_case_id in queue_ids
     assert unscored_case_id not in queue_ids  # never scored -- nothing actionable to show
