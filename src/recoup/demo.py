@@ -69,6 +69,7 @@ from recoup.measurement.cohort import (
 )
 from recoup.measurement.report import BatchInputs, BreakdownRow, HeadlineReport, build_report
 from recoup.measurement.stats import two_proportion_z_test
+from recoup.policy.categories import category_for
 from recoup.policy.context import PolicyContext
 from recoup.policy.loader import PolicyLoader
 from recoup.policy.schema import PolicyBundle
@@ -92,24 +93,6 @@ async def _gather_bounded[T](
             return await coro
 
     return await asyncio.gather(*(_run(c) for c in coros))
-
-
-_RULE_CATEGORY: dict[str, str] = {
-    "REG-COMM-01": "quiet_hours",
-    "REG-COMM-02": "no_consent",
-    "REG-COMM-03": "opt_out",
-    "REG-COMM-06": "cap",
-    "REG-MAND-01": "mandate",
-    "REG-MAND-02": "mandate",
-    "REG-MAND-03": "mandate",
-    "REG-MAND-04": "mandate",
-    "RULE-CTRL-001": "control_cohort",
-    "RULE-EXPOSURE-001": "exposure_cap",
-    "RULE-STOP-TERMINAL": "terminal",
-    "RULE-LADDER-FORBIDDEN": "ladder",
-    "RULE-LADDER-SEQUENCE": "ladder",
-    "RULE-LADDER-CHANNEL": "ladder",
-}
 
 
 @dataclass
@@ -245,8 +228,7 @@ async def _tally_blocked_and_exceptions(
     for events in all_events:
         for event in events:
             if event.event_type == "policy.denied":
-                rule_id = str(event.payload.get("rule_id", ""))
-                category = _RULE_CATEGORY.get(rule_id, "other")
+                category = category_for(str(event.payload.get("rule_id", "")))
                 blocked[category] = blocked.get(category, 0) + 1
             elif event.event_type == "case.exception":
                 exception_count += 1

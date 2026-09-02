@@ -149,6 +149,24 @@ class EventStore:
             rows = (await session.scalars(stmt)).all()
         return [event_row_to_domain(row) for row in rows]
 
+    async def all_cases(
+        self, *, merchant_id: str | None = None, cohort: str | None = None
+    ) -> list[Case]:
+        """Reads the `cases` projection directly -- for dashboard aggregation
+        (FR-15.1/15.2/15.6), which needs the *current* state of every case,
+        not any one case's own history. Still read-only and still downstream
+        of `append`'s folding; nothing here writes."""
+        stmt = select(CaseRow)
+        if merchant_id is not None:
+            stmt = stmt.where(CaseRow.merchant_id == merchant_id)
+        if cohort is not None:
+            stmt = stmt.where(CaseRow.cohort == cohort)
+        stmt = stmt.order_by(CaseRow.created_at.desc())
+
+        async with self._sessionmaker() as session:
+            rows = (await session.scalars(stmt)).all()
+        return [case_row_to_domain(row) for row in rows]
+
 
 def create_engine(settings: Settings | None = None) -> AsyncEngine:
     return create_async_engine((settings or get_settings()).database_url)
