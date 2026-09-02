@@ -26,64 +26,75 @@ export function ModelTransparencyPanel() {
     fetchModelTransparency().then(setData);
   }, []);
 
-  if (!data) return <Card title="Model transparency">Loading…</Card>;
-
   return (
-    <Card title="Model transparency" className="col-span-full">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        {Object.entries(data.models).map(([name, info]) => (
-          <div key={name} className="rounded-md border border-black/10 p-3">
-            <h4 className="mb-2 text-sm font-semibold">{TITLE[name] ?? name}</h4>
-            {!info.available ? (
-              <EmptyState>Not trained yet — run `make train`.</EmptyState>
-            ) : (
-              <>
-                <img
-                  src={`${API_BASE_URL}/artifacts/${CURVE_IMAGE[name]}`}
-                  alt={`${name} curve`}
-                  className="mb-2 w-full rounded border border-black/5"
-                />
-                <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-black/60">
-                  {typeof info.metrics?.macro_f1 === "number" && (
-                    <>
-                      <dt>macro-F1</dt>
-                      <dd className="tabular-nums">{info.metrics.macro_f1.toFixed(3)}</dd>
-                    </>
+    <Card title="Model transparency" description="What each model gets wrong, in its own numbers">
+      {!data ? (
+        <div className="h-32 animate-pulse rounded-lg bg-black/[0.03]" />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {Object.entries(data.models).map(([name, info]) => (
+            <div
+              key={name}
+              className="rounded-xl border border-[var(--color-border)] p-4"
+            >
+              <h4 className="mb-2 text-sm font-semibold text-[var(--color-ink)]">
+                {TITLE[name] ?? name}
+              </h4>
+              {!info.available ? (
+                <EmptyState>
+                  Not trained yet — run <code className="rounded bg-black/5 px-1 py-0.5">make train</code>.
+                </EmptyState>
+              ) : (
+                <>
+                  <img
+                    src={`${API_BASE_URL}/artifacts/${CURVE_IMAGE[name]}`}
+                    alt={`${name} curve`}
+                    className="mb-3 w-full rounded-lg border border-[var(--color-border)]"
+                  />
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-[var(--color-ink-soft)]">
+                    {typeof info.metrics?.macro_f1 === "number" && (
+                      <>
+                        <dt className="text-[var(--color-muted)]">macro-F1</dt>
+                        <dd className="tabular-nums font-medium">{info.metrics.macro_f1.toFixed(3)}</dd>
+                      </>
+                    )}
+                    {typeof info.metrics?.brier_score === "number" && (
+                      <>
+                        <dt className="text-[var(--color-muted)]">Brier score</dt>
+                        <dd className="tabular-nums font-medium">{info.metrics.brier_score.toFixed(3)}</dd>
+                      </>
+                    )}
+                    {typeof info.metrics?.auc === "number" && (
+                      <>
+                        <dt className="text-[var(--color-muted)]">AUC</dt>
+                        <dd className="tabular-nums font-medium">{info.metrics.auc.toFixed(3)}</dd>
+                      </>
+                    )}
+                    {typeof info.metrics?.qini_coefficient === "number" && (
+                      <>
+                        <dt className="text-[var(--color-muted)]">Qini</dt>
+                        <dd className="tabular-nums font-medium">{info.metrics.qini_coefficient.toFixed(3)}</dd>
+                      </>
+                    )}
+                  </dl>
+                  {info.known_failure_modes.length > 0 && (
+                    <div className="mt-3 border-t border-[var(--color-border)] pt-2">
+                      <div className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
+                        Known failure modes
+                      </div>
+                      <ul className="mt-1 list-inside list-disc space-y-0.5 text-xs text-[var(--color-ink-soft)]">
+                        {info.known_failure_modes.map((mode) => (
+                          <li key={mode}>{mode}</li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
-                  {typeof info.metrics?.brier_score === "number" && (
-                    <>
-                      <dt>Brier score</dt>
-                      <dd className="tabular-nums">{info.metrics.brier_score.toFixed(3)}</dd>
-                    </>
-                  )}
-                  {typeof info.metrics?.auc === "number" && (
-                    <>
-                      <dt>AUC</dt>
-                      <dd className="tabular-nums">{info.metrics.auc.toFixed(3)}</dd>
-                    </>
-                  )}
-                  {typeof info.metrics?.qini_coefficient === "number" && (
-                    <>
-                      <dt>Qini</dt>
-                      <dd className="tabular-nums">{info.metrics.qini_coefficient.toFixed(3)}</dd>
-                    </>
-                  )}
-                </dl>
-                {info.known_failure_modes.length > 0 && (
-                  <div className="mt-2">
-                    <div className="text-xs font-medium text-black/50">Known failure modes</div>
-                    <ul className="mt-1 list-inside list-disc text-xs text-black/60">
-                      {info.known_failure_modes.map((mode) => (
-                        <li key={mode}>{mode}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        ))}
-      </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </Card>
   );
 }

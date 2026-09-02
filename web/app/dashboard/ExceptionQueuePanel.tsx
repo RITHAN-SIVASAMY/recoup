@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Card, EmptyState, Table } from "@/components/ui";
+import { Card, EmptyState, Table, Td, Tr } from "@/components/ui";
 import { fetchExceptionQueue, type ExceptionQueueItem } from "@/lib/dashboard-api";
 import { formatDate, formatInr } from "@/lib/format";
 
@@ -20,30 +20,35 @@ export function ExceptionQueuePanel({ refreshKey }: { refreshKey: number }) {
   }, [refreshKey]);
 
   return (
-    <Card title="Exception queue">
+    <Card
+      title="Exception queue"
+      description="Cases needing human handling — nothing here has been silently dropped"
+    >
       {items === null ? (
-        <EmptyState>Loading…</EmptyState>
+        <div className="h-32 animate-pulse rounded-lg bg-black/[0.03]" />
       ) : items.length === 0 ? (
         <EmptyState>Empty — nothing has been lost or gone unhandled.</EmptyState>
       ) : (
-        <Table columns={["Case", "Root cause", "At risk", "Reason", "When"]}>
-          {items.map((item) => (
-            <tr key={item.case_id}>
-              <td className="py-2 pr-4">
-                <Link
-                  href={`/dashboard/cases/${item.case_id}`}
-                  className="text-[var(--color-accent)] hover:underline"
-                >
-                  {item.case_id.slice(-8)}
-                </Link>
-              </td>
-              <td className="py-2 pr-4">{item.root_cause ?? "—"}</td>
-              <td className="py-2 pr-4 tabular-nums">{formatInr(item.amount_at_risk)}</td>
-              <td className="py-2 pr-4 text-black/60">{item.reason}</td>
-              <td className="py-2 pr-4 text-black/40">{formatDate(item.occurred_at)}</td>
-            </tr>
-          ))}
-        </Table>
+        <div className="max-h-96 overflow-y-auto">
+          <Table columns={["Case", "Root cause", "At risk", "Reason", "When"]}>
+            {items.map((item) => (
+              <Tr key={item.case_id}>
+                <Td>
+                  <Link
+                    href={`/dashboard/cases/${item.case_id}`}
+                    className="font-mono text-xs text-[var(--color-accent)] hover:underline"
+                  >
+                    {item.case_id.slice(-8)}
+                  </Link>
+                </Td>
+                <Td muted>{item.root_cause ?? "—"}</Td>
+                <Td>{formatInr(item.amount_at_risk)}</Td>
+                <Td muted>{item.reason}</Td>
+                <Td muted>{formatDate(item.occurred_at)}</Td>
+              </Tr>
+            ))}
+          </Table>
+        </div>
       )}
     </Card>
   );

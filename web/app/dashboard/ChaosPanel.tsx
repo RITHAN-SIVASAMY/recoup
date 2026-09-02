@@ -26,24 +26,26 @@ export function ChaosPanel() {
   }
 
   return (
-    <Card title="Break it — live failure injection" className="col-span-full">
+    <Card title="Break it" description="Live failure injection — proves the system recovers, doesn't just claim to">
       {!scenarios ? (
-        <div className="text-sm text-black/50">Loading…</div>
+        <div className="h-24 animate-pulse rounded-lg bg-black/[0.03]" />
       ) : (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(scenarios).map(([name, description]) => {
             const disabled = NOT_LIVE_RUNNABLE.has(name) || running !== null;
             return (
-              <div key={name} className="rounded-md border border-black/10 p-3">
-                <div className="text-sm font-medium">{name.replace(/_/g, " ")}</div>
-                <p className="mt-1 text-xs text-black/50">{description}</p>
-                <div className="mt-2">
-                  <Button
-                    variant="danger"
-                    onClick={() => breakIt(name)}
-                    disabled={disabled}
-                  >
-                    {running === name ? "Running…" : NOT_LIVE_RUNNABLE.has(name) ? "Proven by test suite" : "Break it"}
+              <div key={name} className="rounded-xl border border-[var(--color-border)] p-4">
+                <div className="text-sm font-semibold text-[var(--color-ink)]">
+                  {name.replace(/_/g, " ")}
+                </div>
+                <p className="mt-1 text-xs text-[var(--color-muted)]">{description}</p>
+                <div className="mt-3">
+                  <Button variant="danger" size="sm" onClick={() => breakIt(name)} disabled={disabled}>
+                    {running === name
+                      ? "Running…"
+                      : NOT_LIVE_RUNNABLE.has(name)
+                        ? "Proven by test suite"
+                        : "Break it"}
                   </Button>
                 </div>
               </div>
@@ -52,24 +54,24 @@ export function ChaosPanel() {
         </div>
       )}
       {result && (
-        <div className="mt-4 rounded-md border border-black/10 p-3">
-          <div className="mb-2 flex items-center gap-2">
+        <div className="mt-4 rounded-xl border border-[var(--color-border)] p-4">
+          <div className="mb-3 flex items-center gap-2">
             <Badge tone={result.passed ? "good" : "bad"}>
               {result.passed ? "recovered gracefully" : "FAILED"}
             </Badge>
-            <span className="text-xs text-black/50">case {result.case_id.slice(-8)}</span>
+            <span className="text-xs text-[var(--color-muted)]">case {result.case_id.slice(-8)}</span>
           </div>
-          <ol className="list-inside list-decimal space-y-1 text-sm text-black/70">
+          <ol className="list-inside list-decimal space-y-1 text-sm text-[var(--color-ink-soft)]">
             {result.narrative.map((line, i) => (
               <li key={i}>{line}</li>
             ))}
           </ol>
-          <div className="mt-2 space-y-1">
+          <div className="mt-3 space-y-1.5 border-t border-[var(--color-border)] pt-3">
             {result.outcomes.map((outcome) => (
               <div key={outcome.label} className="flex items-start gap-2 text-xs">
                 <Badge tone={outcome.passed ? "good" : "bad"}>{outcome.passed ? "✓" : "✗"}</Badge>
-                <span className="text-black/70">
-                  {outcome.label} — <span className="text-black/50">{outcome.detail}</span>
+                <span className="text-[var(--color-ink-soft)]">
+                  {outcome.label} — <span className="text-[var(--color-muted)]">{outcome.detail}</span>
                 </span>
               </div>
             ))}

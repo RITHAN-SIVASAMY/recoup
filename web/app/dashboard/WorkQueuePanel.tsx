@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Card, EmptyState, Table } from "@/components/ui";
+import { Badge, Card, EmptyState, Table, Td, Tr } from "@/components/ui";
 import { fetchWorkQueue, type WorkQueueItem } from "@/lib/dashboard-api";
 import { formatInr } from "@/lib/format";
 
@@ -20,30 +20,37 @@ export function WorkQueuePanel({ refreshKey }: { refreshKey: number }) {
   }, [refreshKey]);
 
   return (
-    <Card title="Work queue — ranked by expected incremental value">
+    <Card
+      title="Work queue"
+      description="Ranked by expected incremental value — the customers worth chasing, in order"
+    >
       {items === null ? (
-        <EmptyState>Loading…</EmptyState>
+        <div className="h-32 animate-pulse rounded-lg bg-black/[0.03]" />
       ) : items.length === 0 ? (
         <EmptyState>No scored, pending treatment cases right now.</EmptyState>
       ) : (
         <Table columns={["Case", "Root cause", "At risk", "Expected value", "Reason"]}>
           {items.map((item) => (
-            <tr key={item.case_id}>
-              <td className="py-2 pr-4">
+            <Tr key={item.case_id}>
+              <Td>
                 <Link
                   href={`/dashboard/cases/${item.case_id}`}
-                  className="text-[var(--color-accent)] hover:underline"
+                  className="font-mono text-xs text-[var(--color-accent)] hover:underline"
                 >
                   {item.case_id.slice(-8)}
                 </Link>
-              </td>
-              <td className="py-2 pr-4">{item.root_cause ?? "—"}</td>
-              <td className="py-2 pr-4 tabular-nums">{formatInr(item.amount_at_risk)}</td>
-              <td className="py-2 pr-4 tabular-nums">
-                {item.expected_value_inr ? formatInr(item.expected_value_inr) : "—"}
-              </td>
-              <td className="py-2 pr-4 text-black/60">{item.reason}</td>
-            </tr>
+              </Td>
+              <Td muted>
+                <Badge tone="neutral">{item.root_cause ?? "—"}</Badge>
+              </Td>
+              <Td>{formatInr(item.amount_at_risk)}</Td>
+              <Td>
+                <span className="font-medium text-[var(--color-good)]">
+                  {item.expected_value_inr ? formatInr(item.expected_value_inr) : "—"}
+                </span>
+              </Td>
+              <Td muted>{item.reason}</Td>
+            </Tr>
           ))}
         </Table>
       )}

@@ -34,15 +34,19 @@ export function CompliancePanel({ refreshKey }: { refreshKey: number }) {
   }, [refreshKey]);
 
   return (
-    <Card title="Compliance — every blocked action, named">
+    <Card
+      title="Compliance"
+      description="Every action policy has blocked, named by rule — nothing silently skipped"
+    >
       {view === null ? (
-        <EmptyState>Loading…</EmptyState>
+        <div className="h-16 animate-pulse rounded-lg bg-black/[0.03]" />
       ) : view.total_blocked === 0 ? (
         <EmptyState>No actions have been blocked yet.</EmptyState>
       ) : (
         <div className="space-y-3">
-          <div className="text-sm text-black/60">
-            <strong>{view.total_blocked}</strong> actions blocked by policy
+          <div className="text-sm text-[var(--color-ink-soft)]">
+            <span className="font-semibold text-[var(--color-ink)]">{view.total_blocked}</span>{" "}
+            actions blocked by policy
           </div>
           <div className="flex flex-wrap gap-2">
             {Object.entries(view.blocked_by_category)

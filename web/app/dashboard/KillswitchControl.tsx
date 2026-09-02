@@ -30,10 +30,15 @@ export function KillswitchControl({ onChanged }: { onChanged: () => void }) {
 
   return (
     <div className="flex items-center gap-2">
-      <Badge tone={engaged ? "bad" : "good"}>
+      <Badge tone={engaged ? "bad" : "good"} dot>
         kill switch {engaged === null ? "…" : engaged ? "ENGAGED" : "off"}
       </Badge>
-      <Button variant={engaged ? "secondary" : "danger"} onClick={toggle} disabled={busy || engaged === null}>
+      <Button
+        variant={engaged ? "secondary" : "danger"}
+        size="sm"
+        onClick={toggle}
+        disabled={busy || engaged === null}
+      >
         {engaged ? "Disengage" : "Engage kill switch"}
       </Button>
     </div>

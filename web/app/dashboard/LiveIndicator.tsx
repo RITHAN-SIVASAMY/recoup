@@ -28,9 +28,9 @@ export function LiveIndicator({ onCaseUpdate }: { onCaseUpdate: () => void }) {
   return (
     <div className="flex items-center gap-1.5">
       <span
-        className={`inline-block h-2 w-2 rounded-full ${
-          connected ? (pulse ? "scale-150 bg-emerald-500" : "bg-emerald-500") : "bg-black/20"
-        } transition-transform`}
+        className={`inline-block h-2 w-2 rounded-full transition-transform ${
+          connected ? (pulse ? "scale-150 bg-[var(--color-good)]" : "bg-[var(--color-good)]") : "bg-black/20"
+        }`}
       />
       <Badge tone={connected ? "good" : "neutral"}>{connected ? "live" : "connecting…"}</Badge>
     </div>

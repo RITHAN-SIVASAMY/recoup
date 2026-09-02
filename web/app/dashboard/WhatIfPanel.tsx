@@ -28,57 +28,60 @@ export function WhatIfPanel() {
   }
 
   return (
-    <Card title="What-if simulator" className="col-span-full">
-      <p className="mb-3 text-xs text-black/50">
+    <Card
+      title="What-if simulator"
+      description="Replays the historical log under different policy settings"
+    >
+      <p className="mb-4 rounded-lg bg-[var(--color-info-bg)] px-3 py-2 text-xs text-[var(--color-info)]">
         A projection over the historical log, never a measurement — it never estimates a
         projected ₹ recovered, since a case&apos;s real-world counterfactual isn&apos;t something
         replaying the log can supply.
       </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <label className="text-xs text-black/60">
+        <label className="text-xs font-medium text-[var(--color-ink-soft)]">
           EV floor (₹)
           <input
             value={evFloor}
             onChange={(e) => setEvFloor(e.target.value)}
             placeholder="5.00"
-            className="mt-1 w-full rounded-md border border-black/15 px-2 py-1 text-sm"
+            className="mt-1 w-full rounded-lg border border-[var(--color-border)] px-2 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
           />
         </label>
-        <label className="text-xs text-black/60">
+        <label className="text-xs font-medium text-[var(--color-ink-soft)]">
           Channel cost (₹)
           <input
             value={channelCost}
             onChange={(e) => setChannelCost(e.target.value)}
             placeholder="0.20"
-            className="mt-1 w-full rounded-md border border-black/15 px-2 py-1 text-sm"
+            className="mt-1 w-full rounded-lg border border-[var(--color-border)] px-2 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
           />
         </label>
-        <label className="text-xs text-black/60">
+        <label className="text-xs font-medium text-[var(--color-ink-soft)]">
           Approval threshold (₹)
           <input
             value={approvalThreshold}
             onChange={(e) => setApprovalThreshold(e.target.value)}
             placeholder="15000"
-            className="mt-1 w-full rounded-md border border-black/15 px-2 py-1 text-sm"
+            className="mt-1 w-full rounded-lg border border-[var(--color-border)] px-2 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
           />
         </label>
-        <label className="text-xs text-black/60">
+        <label className="text-xs font-medium text-[var(--color-ink-soft)]">
           Max contacts
           <input
             value={maxContacts}
             onChange={(e) => setMaxContacts(e.target.value)}
             placeholder="3"
-            className="mt-1 w-full rounded-md border border-black/15 px-2 py-1 text-sm"
+            className="mt-1 w-full rounded-lg border border-[var(--color-border)] px-2 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
           />
         </label>
       </div>
-      <div className="mt-3">
+      <div className="mt-4">
         <Button onClick={run} disabled={busy}>
           {busy ? "Replaying…" : "Replay history with these settings"}
         </Button>
       </div>
       {result && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--color-border)] pt-4">
           <Badge tone="info">projection, not a measurement</Badge>
           <Badge>considered: {result.cases_considered}</Badge>
           <Badge tone="neutral">

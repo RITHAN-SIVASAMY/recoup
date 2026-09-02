@@ -76,27 +76,31 @@ export function CaseTimelineClient({ caseId }: { caseId: string }) {
       <Card>
         <div className="flex flex-wrap gap-2">
           <Badge tone="info">{c.source_type}</Badge>
-          <Badge>{c.resolution_state}</Badge>
-          {c.cohort && <Badge tone={c.cohort === "control" ? "warn" : "good"}>{c.cohort}</Badge>}
+          <Badge dot>{c.resolution_state.replace(/_/g, " ")}</Badge>
+          {c.cohort && (
+            <Badge tone={c.cohort === "control" ? "warn" : "good"}>{c.cohort}</Badge>
+          )}
           {c.root_cause && <Badge tone="neutral">{c.root_cause}</Badge>}
           <Badge tone="neutral">{formatInr(c.amount_at_risk)}</Badge>
         </div>
       </Card>
 
-      <Card title={`Timeline — ${events.length} events`}>
-        <ol className="relative space-y-4 border-l border-black/10 pl-4">
+      <Card title={`Timeline`} description={`${events.length} events, oldest to newest`}>
+        <ol className="relative space-y-5 border-l border-[var(--color-border)] pl-5">
           {events.map((event) => (
             <li key={event.event_id} className="relative">
-              <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-black/30" />
+              <span className="absolute -left-[25px] top-1 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-surface)] bg-[var(--color-accent)]" />
               <div className="flex flex-wrap items-baseline gap-2">
                 <Badge tone={EVENT_TONE[event.event_type] ?? "neutral"}>{event.event_type}</Badge>
-                <span className="text-xs text-black/40">{formatDate(event.occurred_at)}</span>
-                <span className="text-xs text-black/40">seq {event.seq}</span>
+                <span className="text-xs text-[var(--color-muted)]">{formatDate(event.occurred_at)}</span>
+                <span className="text-xs text-[var(--color-muted)]">seq {event.seq}</span>
               </div>
-              <p className="mt-1 text-sm text-black/80">{summaryLine(event)}</p>
+              <p className="mt-1 text-sm text-[var(--color-ink-soft)]">{summaryLine(event)}</p>
               <details className="mt-1">
-                <summary className="cursor-pointer text-xs text-black/40">raw payload</summary>
-                <pre className="mt-1 overflow-x-auto rounded bg-black/[0.03] p-2 text-xs text-black/60">
+                <summary className="cursor-pointer text-xs text-[var(--color-muted)] hover:text-[var(--color-ink-soft)]">
+                  raw payload
+                </summary>
+                <pre className="scrollbar-thin mt-1 overflow-x-auto rounded-lg bg-black/[0.03] p-2 text-xs text-[var(--color-ink-soft)]">
                   {JSON.stringify(event.payload, null, 2)}
                 </pre>
               </details>

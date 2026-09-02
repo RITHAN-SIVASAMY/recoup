@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Badge, Button, Card, EmptyState, Table } from "@/components/ui";
+import { Badge, Button, Card, EmptyState, Table, Td, Tr } from "@/components/ui";
 import {
   cancelStagedAction,
   fetchApprovals,
@@ -60,51 +60,51 @@ export function ApprovalQueuePanel({
   }
 
   return (
-    <Card title="Approval queue">
+    <Card title="Approval queue" description="Actions above the threshold, awaiting sign-off">
       {lastStagedActionId && (
-        <div className="mb-3 flex items-center justify-between rounded-md bg-indigo-50 px-3 py-2 text-sm text-indigo-900">
+        <div className="mb-4 flex items-center justify-between rounded-xl bg-[var(--color-info-bg)] px-4 py-3 text-sm text-[var(--color-info)]">
           <span>Action staged — still inside its undo window.</span>
-          <Button variant="secondary" onClick={cancelLastStaged} disabled={busy === lastStagedActionId}>
+          <Button variant="secondary" size="sm" onClick={cancelLastStaged} disabled={busy === lastStagedActionId}>
             Cancel before it sends
           </Button>
         </div>
       )}
       {approvals === null ? (
-        <EmptyState>Loading…</EmptyState>
+        <div className="h-24 animate-pulse rounded-lg bg-black/[0.03]" />
       ) : approvals.length === 0 ? (
         <EmptyState>Nothing awaiting sign-off.</EmptyState>
       ) : (
         <Table columns={["Case", "Action", "EV", "Rule", "Reason", ""]}>
           {approvals.map((a) => (
-            <tr key={a.approval_id}>
-              <td className="py-2 pr-4">{a.case_id.slice(-8)}</td>
-              <td className="py-2 pr-4">
+            <Tr key={a.approval_id}>
+              <Td className="font-mono text-xs">{a.case_id.slice(-8)}</Td>
+              <Td>
                 {a.action_type}
                 {a.channel ? ` · ${a.channel}` : ""}
-              </td>
-              <td className="py-2 pr-4 tabular-nums">{formatInr(a.expected_value_inr)}</td>
-              <td className="py-2 pr-4">
+              </Td>
+              <Td>
+                <span className="font-medium">{formatInr(a.expected_value_inr)}</span>
+              </Td>
+              <Td>
                 <Badge tone="warn">{a.rule_id}</Badge>
-              </td>
-              <td className="py-2 pr-4 text-black/60">{a.reason}</td>
-              <td className="py-2 pr-4">
+              </Td>
+              <Td muted>{a.reason}</Td>
+              <Td>
                 <div className="flex gap-2">
-                  <Button
-                    onClick={() => act(a.approval_id, "grant")}
-                    disabled={busy === a.approval_id}
-                  >
+                  <Button size="sm" onClick={() => act(a.approval_id, "grant")} disabled={busy === a.approval_id}>
                     Approve
                   </Button>
                   <Button
                     variant="secondary"
+                    size="sm"
                     onClick={() => act(a.approval_id, "reject")}
                     disabled={busy === a.approval_id}
                   >
                     Reject
                   </Button>
                 </div>
-              </td>
-            </tr>
+              </Td>
+            </Tr>
           ))}
         </Table>
       )}

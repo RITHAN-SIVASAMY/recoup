@@ -22,34 +22,34 @@ export function GroundedQAPanel() {
   }
 
   return (
-    <Card title="Ask the audit log">
+    <Card title="Ask the audit log" description="Answers cite only retrieved events — refuses rather than guess">
       <div className="space-y-2">
         <input
           value={caseId}
           onChange={(e) => setCaseId(e.target.value)}
           placeholder="case id"
-          className="w-full rounded-md border border-black/15 px-3 py-1.5 text-sm"
+          className="w-full rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
         />
         <input
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder='e.g. "Why did we contact this account three times?"'
-          className="w-full rounded-md border border-black/15 px-3 py-1.5 text-sm"
+          className="w-full rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
         />
         <Button onClick={ask} disabled={busy || !caseId || !question}>
           {busy ? "Asking…" : "Ask"}
         </Button>
       </div>
       {answer && (
-        <div className="mt-4 rounded-md border border-black/10 bg-black/[0.02] p-3 text-sm">
+        <div className="mt-4 rounded-xl border border-[var(--color-border)] bg-black/[0.015] p-4 text-sm">
           {answer.refused ? (
             <div>
               <Badge tone="warn">Refused</Badge>
-              <p className="mt-2 text-black/70">{answer.refusal_reason}</p>
+              <p className="mt-2 text-[var(--color-ink-soft)]">{answer.refusal_reason}</p>
             </div>
           ) : (
             <div>
-              <p className="whitespace-pre-wrap text-black/80">{answer.answer}</p>
+              <p className="whitespace-pre-wrap text-[var(--color-ink)]">{answer.answer}</p>
               {answer.citations.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {answer.citations.map((c) => (
@@ -62,7 +62,7 @@ export function GroundedQAPanel() {
             </div>
           )}
           {answer.degraded_mode && (
-            <div className="mt-2 text-xs text-amber-700">
+            <div className="mt-2 text-xs text-[var(--color-warn)]">
               Degraded mode — the model was unavailable, so this is a plain event-log summary.
             </div>
           )}
