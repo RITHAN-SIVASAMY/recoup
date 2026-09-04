@@ -125,6 +125,8 @@ simulator — with exact things to click and what you should see.
 | [Evaluation protocol](docs/05-EVALUATION-PROTOCOL.md) | How every number is produced — pre-registered |
 | [Compliance matrix](docs/06-COMPLIANCE-MATRIX.md) | Every rule → config → code → test |
 | [Incident log](docs/09-INCIDENT-LOG.md) | What broke while building it, and how it was fixed |
+| [How it was built](AGENTS.md) | The Claude Code workflow, the contract that constrained it, and the bug that contract caught |
+| [Testing guide](TESTING_GUIDE.md) | A hands-on walkthrough — what to click, and what you should see |
 
 ## Stack
 

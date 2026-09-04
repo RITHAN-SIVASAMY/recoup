@@ -11,7 +11,7 @@ function AnimatedRupee({ value }: { value: string }) {
   const target = Number(String(value).split(".")[0]);
   const negative = target < 0;
   const animated = useCountUp(Math.abs(target));
-  const settled = animated >= Math.abs(target) - 0.5;
+  const settled = Math.abs(animated - Math.abs(target)) < 0.5;
   return (
     <span className="font-mono tabular-nums">
       {settled ? formatInr(value) : `₹ ${negative ? "-" : ""}${Math.round(animated).toLocaleString("en-IN")}`}
@@ -26,7 +26,10 @@ export function BatchSummaryPanel({ refreshKey }: { refreshKey: number }) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    // Deliberately not flipping back to `loading` on a re-fetch: refreshKey
+    // bumps on every live SSE case_update, and a skeleton flash on each one
+    // makes the headline unreadable. Keep the last good numbers on screen
+    // until the new ones land.
     fetchBatchSummary()
       .then((data) => {
         if (!cancelled) setSummary(data);
