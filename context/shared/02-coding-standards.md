@@ -29,9 +29,12 @@ tests/
 ## TypeScript / Next.js
 
 - Strict mode, no `any`. Server Components by default; client components only where interactivity requires.
-- API types generated from the FastAPI OpenAPI schema — never hand-written and never drifting.
-- TanStack Query for fetching, `EventSource` for the live stream.
-- Tailwind + shadcn/ui. No bespoke design system.
+- API types hand-written in `web/lib/dashboard-api.ts` to match the backend's Pydantic
+  models field-for-field (OpenAPI codegen was the original plan; dropped as unnecessary
+  ceremony at this API's size — keep the two in sync by hand, deliberately, not silently).
+- Plain `fetch` for requests, `EventSource` for the live stream.
+- Tailwind, hand-rolled components (`web/components/ui.tsx`). Bespoke, on purpose — see
+  ADR-0008's update on why shadcn/ui didn't end up used.
 - Every number rendered with its uncertainty where one exists.
 
 ## Commits

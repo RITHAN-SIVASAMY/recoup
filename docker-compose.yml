@@ -1,3 +1,16 @@
+# `.env` is written for host-side tooling (`make demo`, local pytest) and
+# points at docker-compose.override.yml's remapped host ports
+# (localhost:5434/6380) so a locally-running Postgres/Redis on the
+# standard ports doesn't collide. A *container* reaches these same
+# services over the compose network instead, as `postgres`/`redis` on
+# their standard ports -- `localhost` inside a container means the
+# container itself. Overriding here (environment: wins over env_file on
+# a key collision) is what makes `docker compose up` actually able to
+# connect, rather than failing to resolve `localhost:5434`.
+x-container-db-env: &container-db-env
+  DATABASE_URL: postgresql+asyncpg://recoup:recoup@postgres:5432/recoup
+  REDIS_URL: redis://redis:6379/0
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -20,21 +33,34 @@ services:
       interval: 5s
       retries: 10
 
+  migrate:
+    build: { context: ., dockerfile: docker/Dockerfile.api }
+    command: uv run alembic upgrade head
+    env_file: .env
+    environment: *container-db-env
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
   api:
     build: { context: ., dockerfile: docker/Dockerfile.api }
     env_file: .env
+    environment: *container-db-env
     ports: ["8000:8000"]
     depends_on:
       postgres: { condition: service_healthy }
       redis:    { condition: service_healthy }
+      migrate:  { condition: service_completed_successfully }
 
   worker:
     build: { context: ., dockerfile: docker/Dockerfile.api }
     command: uv run arq recoup.workers.settings.WorkerSettings
     env_file: .env
+    environment: *container-db-env
     depends_on:
       postgres: { condition: service_healthy }
       redis:    { condition: service_healthy }
+      migrate:  { condition: service_completed_successfully }
 
   web:
     build: { context: ./web }
