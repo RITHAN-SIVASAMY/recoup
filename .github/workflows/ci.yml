@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { submodules: recursive }
+        with: { submodules: recursive, fetch-depth: 0 }  # gitleaks needs full history, not a shallow clone
       - uses: astral-sh/setup-uv@v3
       - run: uv sync --all-extras
       - run: uv run ruff check .
@@ -17,7 +17,9 @@ jobs:
       - run: uv run mypy src/recoup
       - run: uv run lint-imports
       - name: secret scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   tests:
     runs-on: ubuntu-latest
@@ -37,6 +39,16 @@ jobs:
       - uses: astral-sh/setup-uv@v3
       - run: uv sync --all-extras
       - run: uv run alembic upgrade head
+      - name: train classifier, propensity and uplift on seeded data
+        # Several unit/integration tests exercise the real trained artifacts
+        # (e.g. test_classifier_explainer_is_built_exactly_once_and_reused
+        # loads ml/artifacts/classifier/model.joblib) -- present on any dev
+        # machine that's already run `make train`, absent on a fresh CI
+        # runner, which is why this job never actually ran green.
+        run: |
+          uv run python ml/train_classifier.py
+          uv run python ml/train_propensity.py
+          uv run python ml/train_uplift.py
       - name: unit + property
         run: uv run pytest -m "unit or property" -q --cov=src/recoup --cov-report=xml
       - name: integration

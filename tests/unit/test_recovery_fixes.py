@@ -37,9 +37,9 @@ def test_every_ladder_root_cause_has_a_defined_fix_not_the_generic_fallback() ->
         if root_cause == "unknown":
             continue
         fix = fix_for(root_cause)
-        assert (
-            fix.kind != "contact_support" or root_cause == "issuer_risk_block"
-        ), f"{root_cause} silently fell back to the generic fix"
+        assert fix.kind != "contact_support" or root_cause == "issuer_risk_block", (
+            f"{root_cause} silently fell back to the generic fix"
+        )
 
 
 def test_an_unrecognized_root_cause_gets_the_generic_fallback_not_a_crash() -> None:

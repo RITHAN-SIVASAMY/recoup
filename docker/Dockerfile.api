@@ -1,6 +1,14 @@
 FROM python:3.12-slim
 WORKDIR /app
 
+# LightGBM's compiled lib_lightgbm.so is linked against libgomp (GNU OpenMP);
+# it's absent from the slim base and classify() -- via SHAP's TreeExplainer --
+# fails with `OSError: libgomp.so.1: cannot open shared object file` the
+# moment either service classifies a real case. Not caught by `docker compose
+# up` alone: nothing exercises the classifier at container-start time.
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir uv
 
 COPY pyproject.toml uv.lock* ./
