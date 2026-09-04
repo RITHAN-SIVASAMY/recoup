@@ -208,12 +208,16 @@ class ApprovalStore:
             row = await session.get(PendingApprovalRow, approval_id)
             return _row_to_domain(row) if row is not None else None
 
-    async def list_pending(self, merchant_id: str) -> Sequence[PendingApproval]:
+    async def list_pending(self) -> Sequence[PendingApproval]:
+        # No merchant_id filter, deliberately (INC-021's sibling bug, INC-028):
+        # rows are written with the case's real business-profile merchant_id
+        # (`demo-d2c`/`demo-subscription`/`demo-b2b`, from `case.merchant_id`
+        # at line ~65), never `policy.merchant.merchant_id` ("demo" -- the
+        # policy config's own label). Filtering on the latter here silently
+        # excluded every real approval; single-tenant build, so the filter
+        # was never buying isolation, only ever a bug.
         async with self._sessionmaker() as session:
             rows = await session.scalars(
-                select(PendingApprovalRow).where(
-                    PendingApprovalRow.merchant_id == merchant_id,
-                    PendingApprovalRow.status == "pending",
-                )
+                select(PendingApprovalRow).where(PendingApprovalRow.status == "pending")
             )
             return [_row_to_domain(row) for row in rows]

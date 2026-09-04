@@ -44,9 +44,8 @@ async def _case_for(event_store: EventStore, case_id: str) -> Case:
 @router.get("/approvals")
 async def list_approvals(
     approval_store: Annotated[ApprovalStore, Depends(get_approval_store)],
-    policy: Annotated[PolicyBundle, Depends(get_policy)],
 ) -> list[dict[str, object]]:
-    pending = await approval_store.list_pending(policy.merchant.merchant_id)
+    pending = await approval_store.list_pending()
     return [
         {
             "approval_id": p.approval_id,
