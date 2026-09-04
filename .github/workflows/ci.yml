@@ -70,7 +70,10 @@ jobs:
 
   llm-eval:
     runs-on: ubuntu-latest
-    if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    # A job-level `if:` cannot reference the `secrets` context -- only
+    # `github`, `needs`, `vars` and `inputs` are available there ("Unrecognized
+    # named-value: 'secrets'"). Gate inside the step instead, where `env` can
+    # see it.
     steps:
       - uses: actions/checkout@v4
         with: { submodules: recursive }
@@ -78,4 +81,9 @@ jobs:
       - run: uv sync --all-extras
       - name: grounded QA + PTP + message safety benchmarks
         env: { ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}" }
-        run: uv run pytest -m llm_eval -q
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::notice::ANTHROPIC_API_KEY not set -- skipping the llm_eval suite"
+            exit 0
+          fi
+          uv run pytest -m llm_eval -q
