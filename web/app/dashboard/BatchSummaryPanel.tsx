@@ -3,17 +3,21 @@
 import { useEffect, useState } from "react";
 import { Badge, Card, EmptyState, Stat } from "@/components/ui";
 import { fetchBatchSummary, type BatchSummary } from "@/lib/dashboard-api";
-import { formatInr, formatPercent } from "@/lib/format";
+import { formatInr, formatPercent, formatRatio } from "@/lib/format";
+import { useCountUp } from "@/lib/useCountUp";
+import { RecoveryFunnel } from "./RecoveryFunnel";
 
-const STATE_TONE: Record<string, "good" | "bad" | "warn" | "info" | "neutral"> = {
-  recovered: "good",
-  abandoned_uneconomic: "warn",
-  exception: "bad",
-  awaiting_promise: "info",
-  pending: "neutral",
-  stopped_by_policy: "warn",
-  control_untouched: "neutral",
-};
+function AnimatedRupee({ value }: { value: string }) {
+  const target = Number(String(value).split(".")[0]);
+  const negative = target < 0;
+  const animated = useCountUp(Math.abs(target));
+  const settled = animated >= Math.abs(target) - 0.5;
+  return (
+    <span className="font-mono tabular-nums">
+      {settled ? formatInr(value) : `₹ ${negative ? "-" : ""}${Math.round(animated).toLocaleString("en-IN")}`}
+    </span>
+  );
+}
 
 export function BatchSummaryPanel({ refreshKey }: { refreshKey: number }) {
   const [summary, setSummary] = useState<BatchSummary | null>(null);
@@ -40,8 +44,8 @@ export function BatchSummaryPanel({ refreshKey }: { refreshKey: number }) {
 
   if (loading) {
     return (
-      <Card>
-        <div className="h-24 animate-pulse rounded-lg bg-black/[0.03]" />
+      <Card padded={false}>
+        <div className="skeleton h-52 rounded-2xl" />
       </Card>
     );
   }
@@ -62,12 +66,12 @@ export function BatchSummaryPanel({ refreshKey }: { refreshKey: number }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="animate-in space-y-4">
       <Card padded={false} className="overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-border)] bg-black/[0.015] px-5 py-3">
-          <div className="text-xs text-[var(--color-muted)]">
-            batch <span className="font-mono text-[var(--color-ink-soft)]">{report.batch_id}</span>{" "}
-            · seed {report.seed} · {report.n_cases_total} cases
+          <div className="font-mono text-xs text-[var(--color-muted)]">
+            batch <span className="text-[var(--color-ink-soft)]">{report.batch_id}</span> · seed{" "}
+            {report.seed} · {report.n_cases_total} cases
           </div>
           <div className="flex gap-2">
             <Badge tone={summary.audit_chain_verified ? "good" : "bad"} dot>
@@ -81,21 +85,22 @@ export function BatchSummaryPanel({ refreshKey }: { refreshKey: number }) {
 
         <div className="grid grid-cols-1 divide-y divide-[var(--color-border)] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           <div className="p-5">
-            <Stat label="Revenue at risk" value={formatInr(report.at_risk_inr)} size="lg" />
+            <Stat label="Revenue at risk" value={<AnimatedRupee value={report.at_risk_inr} />} size="lg" />
           </div>
           <div className="p-5">
             <Stat
               label="Raw recovered"
-              value={formatInr(report.raw_recovered_inr)}
+              value={<AnimatedRupee value={report.raw_recovered_inr} />}
               sub="overstates our impact"
               tone="warn"
               size="lg"
             />
           </div>
-          <div className="bg-[var(--color-accent-soft)] p-5">
+          <div className="relative overflow-hidden bg-[var(--color-accent-soft)] p-5">
+            <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-[var(--color-accent)]/[0.06]" />
             <Stat
               label="Incremental recovered"
-              value={formatInr(report.incremental_inr)}
+              value={<AnimatedRupee value={report.incremental_inr} />}
               sub={`95% CI ${formatInr(report.ci_low_inr)} – ${formatInr(report.ci_high_inr)}`}
               tone={report.significant ? "good" : "neutral"}
               size="lg"
@@ -110,7 +115,7 @@ export function BatchSummaryPanel({ refreshKey }: { refreshKey: number }) {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4 border-t border-[var(--color-border)] px-5 py-4 sm:grid-cols-4 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-5 border-t border-[var(--color-border)] px-5 py-4 sm:grid-cols-4 lg:grid-cols-6">
           <Stat
             label="Lift"
             value={formatPercent(report.lift_pp)}
@@ -121,21 +126,20 @@ export function BatchSummaryPanel({ refreshKey }: { refreshKey: number }) {
           <Stat label="CUPED-adjusted" value={formatInr(report.cuped_adjusted_inr)} size="sm" />
           <Stat
             label="Cost per ₹ recovered"
-            value={report.cost_per_inr_recovered ? `₹${report.cost_per_inr_recovered}` : "—"}
+            value={report.cost_per_inr_recovered ? `₹${formatRatio(report.cost_per_inr_recovered)}` : "—"}
             size="sm"
           />
           <Stat label="₹ saved, not contacting" value={formatInr(report.saved_by_not_contacting_inr)} size="sm" />
           <Stat label="Spend on contact" value={formatInr(report.spend_on_contact_inr)} size="sm" />
         </div>
-      </Card>
 
-      <div className="flex flex-wrap gap-2">
-        {Object.entries(summary.cases_by_state).map(([state, count]) => (
-          <Badge key={state} tone={STATE_TONE[state] ?? "neutral"}>
-            {state.replace(/_/g, " ")}: {count}
-          </Badge>
-        ))}
-      </div>
+        <div className="border-t border-[var(--color-border)] px-5 py-4">
+          <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
+            Case resolution mix
+          </div>
+          <RecoveryFunnel casesByState={summary.cases_by_state} />
+        </div>
+      </Card>
     </div>
   );
 }

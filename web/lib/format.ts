@@ -24,6 +24,16 @@ export function formatInr(value: string | number | null | undefined): string {
   return `₹ ${negative ? "-" : ""}${grouped}`;
 }
 
+/** Decimal division (e.g. cost per rupee recovered) can carry far more
+ * digits than are meaningful to show -- round for display only, never for
+ * anything that feeds back into a computation. */
+export function formatRatio(value: string | null | undefined, digits = 4): string {
+  if (value === null || value === undefined) return "—";
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "—";
+  return n.toFixed(digits);
+}
+
 export function formatPercent(value: number | null | undefined, digits = 1): string {
   if (value === null || value === undefined) return "—";
   return `${value >= 0 ? "+" : ""}${value.toFixed(digits)}%`;

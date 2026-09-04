@@ -22,7 +22,7 @@ export function Card({
       {(title || action) && (
         <div className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] px-5 py-4">
           <div>
-            {title && <h3 className="text-sm font-semibold text-[var(--color-ink)]">{title}</h3>}
+            {title && <h3 className="font-display text-[15px] font-semibold text-[var(--color-ink)]">{title}</h3>}
             {description && (
               <p className="mt-0.5 text-xs text-[var(--color-muted)]">{description}</p>
             )}
@@ -54,13 +54,15 @@ export function Stat({
     bad: "text-[var(--color-bad)]",
     warn: "text-[var(--color-warn)]",
   }[tone];
-  const sizeClass = { sm: "text-lg", md: "text-2xl", lg: "text-4xl" }[size];
+  const sizeClass = { sm: "text-lg", md: "text-2xl", lg: "text-[28px] sm:text-3xl" }[size];
   return (
-    <div>
+    <div className="min-w-0">
       <div className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
         {label}
       </div>
-      <div className={`mt-1 font-semibold tabular-nums tracking-tight ${sizeClass} ${toneClass}`}>
+      <div
+        className={`mt-1 whitespace-nowrap font-mono font-semibold tabular-nums tracking-tight ${sizeClass} ${toneClass}`}
+      >
         {value}
       </div>
       {sub && <div className="mt-1 text-xs text-[var(--color-muted)]">{sub}</div>}
@@ -87,7 +89,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${BADGE_TONE[tone]}`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${BADGE_TONE[tone]}`}
     >
       {dot && <span className="h-1.5 w-1.5 rounded-full bg-current" />}
       {children}
@@ -123,7 +125,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-lg font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${sizeClass} ${variantClass}`}
+      className={`whitespace-nowrap rounded-lg font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${sizeClass} ${variantClass}`}
     >
       {children}
     </button>
