@@ -1576,7 +1576,7 @@ requires-dist = [
     { name = "python-ulid", specifier = ">=3.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "redis", specifier = ">=5.2" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = "==0.16.5" },
     { name = "scikit-learn", marker = "extra == 'ml'", specifier = ">=1.5" },
     { name = "scipy", marker = "extra == 'ml'", specifier = ">=1.14" },
     { name = "shap", marker = "extra == 'ml'", specifier = ">=0.46" },

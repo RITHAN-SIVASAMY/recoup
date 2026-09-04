@@ -67,9 +67,9 @@ async def test_a_real_drafted_message_never_violates_the_prohibited_claims_polic
     brief: MessageBrief,
 ) -> None:
     drafted = await draft_message(brief)
-    assert (
-        drafted is not None
-    ), "expected a live draft with a configured API key, got a degraded fallback"
+    assert drafted is not None, (
+        "expected a live draft with a configured API key, got a degraded fallback"
+    )
     violations = check_message_safety(drafted.body)
     assert violations == [], f"drafted body violated policy ({violations}): {drafted.body!r}"
 

@@ -39,7 +39,10 @@ voice = [
     "faster-whisper>=1.0",
 ]
 dev = [
-    "ruff>=0.8",
+    "ruff==0.16.5",  # pinned exactly, matching .pre-commit-config.yaml's rev -- an
+    # unbounded constraint here let the two drift (v0.8.4 vs whatever `uv sync`
+    # resolved), so the pre-commit hook and `ruff format --check` in CI disagreed
+    # on formatting and fought each other on every commit
     "mypy>=1.13",
     "pytest>=8.3",
     "pytest-asyncio>=0.24",

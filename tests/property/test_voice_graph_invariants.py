@@ -54,9 +54,9 @@ def test_disclosure_is_unskippable_over_any_walk(intent_sequence: list[CustomerI
         node = next_node(node, intent)
         visited.append(node)
         if node in _PRE_DISCLOSURE_NODES:
-            assert (
-                "disclose" in visited
-            ), f"reached {node!r} without ever passing through disclose; path was {visited}"
+            assert "disclose" in visited, (
+                f"reached {node!r} without ever passing through disclose; path was {visited}"
+            )
 
 
 @given(node=st.sampled_from(_ALL_NODES), intent=st.sampled_from(_ALL_INTENTS))
