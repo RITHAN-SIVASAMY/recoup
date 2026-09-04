@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Badge, Card, EmptyState } from "@/components/ui";
 import { fetchCaseTimeline, type CaseEventRow, type CaseTimeline } from "@/lib/dashboard-api";
-import { formatDate, formatInr } from "@/lib/format";
+import { formatDate, formatInr, humanize } from "@/lib/format";
 
 const EVENT_TONE: Record<string, "good" | "bad" | "warn" | "info" | "neutral"> = {
   "payment.recovered": "good",
@@ -19,23 +19,23 @@ function summaryLine(event: CaseEventRow): string {
   const p = event.payload;
   switch (event.event_type) {
     case "case.created":
-      return `Case created — ${p.source_type} — ${formatInr(String(p.amount_at_risk ?? ""))} at risk`;
+      return `Case created — ${humanize(String(p.source_type ?? ""))} — ${formatInr(String(p.amount_at_risk ?? ""))} at risk`;
     case "case.cohort_assigned":
-      return `Cohort assigned: ${p.cohort}${p.excluded_from_control ? " (excluded from control)" : ""}`;
+      return `Cohort assigned: ${humanize(String(p.cohort ?? ""))}${p.excluded_from_control ? " (excluded from control)" : ""}`;
     case "case.classified":
-      return `Classified: ${p.root_cause} (confidence ${Number(p.confidence).toFixed(2)})`;
+      return `Classified: ${humanize(String(p.root_cause ?? ""))} (confidence ${Number(p.confidence).toFixed(2)})`;
     case "case.scored":
-      return `Scored: uplift ${Number(p.uplift).toFixed(3)}, segment ${p.uplift_segment}`;
+      return `Scored: uplift ${Number(p.uplift).toFixed(3)}, segment ${humanize(String(p.uplift_segment ?? ""))}`;
     case "ev.computed":
-      return `EV computed for ${p.action_type}${p.channel ? "/" + p.channel : ""}: ₹${p.ev_inr}`;
+      return `EV computed for ${humanize(String(p.action_type ?? ""))}${p.channel ? " / " + humanize(String(p.channel)) : ""}: ${formatInr(String(p.ev_inr ?? ""))}`;
     case "policy.evaluated":
       return `Policy evaluated: ${p.decision} (${p.rule_id})`;
     case "policy.denied":
       return `Denied — ${p.rule_id}: ${p.reason}`;
     case "action.staged":
-      return `Staged: ${p.action_type}${p.channel ? "/" + p.channel : ""}`;
+      return `Staged: ${humanize(String(p.action_type ?? ""))}${p.channel ? " / " + humanize(String(p.channel)) : ""}`;
     case "action.sent":
-      return `Sent via ${p.channel}`;
+      return `Sent via ${humanize(String(p.channel ?? ""))}`;
     case "action.delivered":
       return "Delivered";
     case "action.engaged":
@@ -43,15 +43,15 @@ function summaryLine(event: CaseEventRow): string {
     case "action.cancelled":
       return `Cancelled — ${p.reason ?? ""}`;
     case "case.abandoned_uneconomic":
-      return `Abandoned — below EV floor (₹${p.ev_floor_inr})`;
+      return `Abandoned — below EV floor (${formatInr(String(p.ev_floor_inr ?? ""))})`;
     case "payment.recovered":
       return `Payment recovered (via ${p.via ?? "unknown"})`;
     case "case.exception":
-      return `Exception at ${p.stage ?? "?"}: ${p.error ?? p.reason ?? "unspecified"}`;
+      return `Exception at ${p.stage ? humanize(String(p.stage)) : "?"}: ${p.error ?? p.reason ?? "unspecified"}`;
     case "case.measurement_resolved":
       return `Measurement resolution: ${p.resolved ? "resolved" : "not resolved"}`;
     case "ptp.captured":
-      return `Promise to pay captured: ₹${p.amount} by ${p.promised_date}`;
+      return `Promise to pay captured: ${formatInr(String(p.amount ?? ""))} by ${p.promised_date}`;
     default:
       return event.event_type;
   }
@@ -75,12 +75,12 @@ export function CaseTimelineClient({ caseId }: { caseId: string }) {
     <div className="space-y-6">
       <Card>
         <div className="flex flex-wrap gap-2">
-          <Badge tone="info">{c.source_type}</Badge>
-          <Badge dot>{c.resolution_state.replace(/_/g, " ")}</Badge>
+          <Badge tone="info">{humanize(c.source_type)}</Badge>
+          <Badge dot>{humanize(c.resolution_state)}</Badge>
           {c.cohort && (
-            <Badge tone={c.cohort === "control" ? "warn" : "good"}>{c.cohort}</Badge>
+            <Badge tone={c.cohort === "control" ? "warn" : "good"}>{humanize(c.cohort)}</Badge>
           )}
-          {c.root_cause && <Badge tone="neutral">{c.root_cause}</Badge>}
+          {c.root_cause && <Badge tone="neutral">{humanize(c.root_cause)}</Badge>}
           <Badge tone="neutral">{formatInr(c.amount_at_risk)}</Badge>
         </div>
       </Card>

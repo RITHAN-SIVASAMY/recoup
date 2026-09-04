@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Card, EmptyState, Table, Td, Tr } from "@/components/ui";
 import { fetchExceptionQueue, type ExceptionQueueItem } from "@/lib/dashboard-api";
-import { formatDate, formatInr } from "@/lib/format";
+import { formatDate, formatInr, humanize } from "@/lib/format";
 
 export function ExceptionQueuePanel({ refreshKey }: { refreshKey: number }) {
   const [items, setItems] = useState<ExceptionQueueItem[] | null>(null);
@@ -41,7 +41,7 @@ export function ExceptionQueuePanel({ refreshKey }: { refreshKey: number }) {
                     {item.case_id.slice(-8)}
                   </Link>
                 </Td>
-                <Td muted>{item.root_cause ?? "—"}</Td>
+                <Td muted>{humanize(item.root_cause)}</Td>
                 <Td>{formatInr(item.amount_at_risk)}</Td>
                 <Td muted>{item.reason}</Td>
                 <Td muted>{formatDate(item.occurred_at)}</Td>

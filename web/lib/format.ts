@@ -46,3 +46,24 @@ export function formatDate(iso: string | null | undefined): string {
     timeStyle: "short",
   });
 }
+
+const _ACRONYMS: Record<string, string> = {
+  sms: "SMS",
+  otp: "OTP",
+  upi: "UPI",
+  ev: "EV",
+  ptp: "PTP",
+  b2b: "B2B",
+  cuped: "CUPED",
+};
+
+/** Domain enums travel the wire as snake_case (`card_expired_or_invalid`,
+ * `sure_thing`, `whatsapp`) -- fine for logs and code, not for a screen.
+ * Title-cases each word and upper-cases known channel/protocol acronyms. */
+export function humanize(value: string | null | undefined): string {
+  if (!value) return "—";
+  return value
+    .split("_")
+    .map((word) => _ACRONYMS[word.toLowerCase()] ?? word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}

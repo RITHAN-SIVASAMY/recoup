@@ -1,5 +1,7 @@
 "use client";
 
+import { humanize } from "@/lib/format";
+
 const STATE_LABEL: Record<string, string> = {
   pending: "Pending",
   awaiting_promise: "Awaiting promise",
@@ -46,7 +48,7 @@ export function RecoveryFunnel({ casesByState }: { casesByState: Record<string, 
           return (
             <div
               key={state}
-              title={`${STATE_LABEL[state] ?? state}: ${count.toLocaleString("en-IN")} (${pct.toFixed(1)}%)`}
+              title={`${STATE_LABEL[state] ?? humanize(state)}: ${count.toLocaleString("en-IN")} (${pct.toFixed(1)}%)`}
               className="h-full transition-[filter] hover:brightness-110"
               style={{
                 width: `${pct}%`,
@@ -64,7 +66,7 @@ export function RecoveryFunnel({ casesByState }: { casesByState: Record<string, 
               className="h-2 w-2 shrink-0 rounded-[2px]"
               style={{ background: STATE_COLOR[state] ?? "var(--color-neutral)" }}
             />
-            <span className="text-[var(--color-ink-soft)]">{STATE_LABEL[state] ?? state}</span>
+            <span className="text-[var(--color-ink-soft)]">{STATE_LABEL[state] ?? humanize(state)}</span>
             <span className="font-mono text-[var(--color-muted)]">{count.toLocaleString("en-IN")}</span>
           </div>
         ))}

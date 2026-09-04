@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Badge, Button, Card } from "@/components/ui";
 import { fetchChaosScenarios, runChaosScenario, type ChaosResult } from "@/lib/dashboard-api";
+import { humanize } from "@/lib/format";
 
 const NOT_LIVE_RUNNABLE = new Set(["malformed_payload", "clock_skew"]);
 
@@ -36,7 +37,7 @@ export function ChaosPanel() {
             return (
               <div key={name} className="rounded-xl border border-[var(--color-border)] p-4">
                 <div className="text-sm font-semibold text-[var(--color-ink)]">
-                  {name.replace(/_/g, " ")}
+                  {humanize(name)}
                 </div>
                 <p className="mt-1 text-xs text-[var(--color-muted)]">{description}</p>
                 <div className="mt-3">

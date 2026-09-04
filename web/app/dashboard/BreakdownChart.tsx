@@ -2,6 +2,7 @@
 
 import type { BreakdownRow } from "@/lib/dashboard-api";
 import { EmptyState } from "@/components/ui";
+import { humanize } from "@/lib/format";
 
 const DIMENSION_LABEL: Record<string, string> = {
   root_cause: "Root cause",
@@ -40,7 +41,7 @@ export function BreakdownChart({ breakdowns }: { breakdowns: BreakdownRow[] }) {
       {[...groups.entries()].map(([dimension, rows]) => (
         <div key={dimension}>
           <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
-            {DIMENSION_LABEL[dimension] ?? dimension}
+            {DIMENSION_LABEL[dimension] ?? humanize(dimension)}
           </div>
           <div className="space-y-2.5">
             {rows.map((row) => {
@@ -49,8 +50,8 @@ export function BreakdownChart({ breakdowns }: { breakdowns: BreakdownRow[] }) {
               const color = positive ? "var(--color-good)" : "var(--color-bad)";
               return (
                 <div key={`${dimension}-${row.key}`} className="grid grid-cols-[120px_1fr_88px] items-center gap-3">
-                  <span className="truncate text-xs text-[var(--color-ink-soft)]" title={row.key}>
-                    {row.key}
+                  <span className="truncate text-xs text-[var(--color-ink-soft)]" title={humanize(row.key)}>
+                    {humanize(row.key)}
                   </span>
                   <div className="relative h-5">
                     <div className="absolute inset-y-0 left-1/2 w-px bg-[var(--color-border)]" />

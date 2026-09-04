@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { API_BASE_URL } from "@/lib/api";
 import { Card, EmptyState } from "@/components/ui";
 import { fetchModelTransparency, type ModelTransparency } from "@/lib/dashboard-api";
+import { humanize } from "@/lib/format";
 
 const CURVE_IMAGE: Record<string, string> = {
   classifier: "classifier/confusion_matrix.png",
@@ -38,7 +39,7 @@ export function ModelTransparencyPanel() {
               className="rounded-xl border border-[var(--color-border)] p-4"
             >
               <h4 className="mb-2 text-sm font-semibold text-[var(--color-ink)]">
-                {TITLE[name] ?? name}
+                {TITLE[name] ?? humanize(name)}
               </h4>
               {!info.available ? (
                 <EmptyState>

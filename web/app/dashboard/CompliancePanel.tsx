@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Badge, Card, EmptyState } from "@/components/ui";
 import { fetchComplianceView, type ComplianceView } from "@/lib/dashboard-api";
+import { humanize } from "@/lib/format";
 
 const LABELS: Record<string, string> = {
   quiet_hours: "Quiet hours (REG-COMM-01)",
@@ -53,7 +54,7 @@ export function CompliancePanel({ refreshKey }: { refreshKey: number }) {
               .sort(([, a], [, b]) => b - a)
               .map(([category, count]) => (
                 <Badge key={category} tone="warn">
-                  {LABELS[category] ?? category}: {count}
+                  {LABELS[category] ?? humanize(category)}: {count}
                 </Badge>
               ))}
           </div>

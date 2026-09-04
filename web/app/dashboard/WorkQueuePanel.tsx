@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Badge, Card, EmptyState, Table, Td, Tr } from "@/components/ui";
 import { fetchWorkQueue, type WorkQueueItem } from "@/lib/dashboard-api";
-import { formatInr } from "@/lib/format";
+import { formatInr, humanize } from "@/lib/format";
 
 export function WorkQueuePanel({ refreshKey }: { refreshKey: number }) {
   const [items, setItems] = useState<WorkQueueItem[] | null>(null);
@@ -41,7 +41,7 @@ export function WorkQueuePanel({ refreshKey }: { refreshKey: number }) {
                 </Link>
               </Td>
               <Td muted>
-                <Badge tone="neutral">{item.root_cause ?? "—"}</Badge>
+                <Badge tone="neutral">{humanize(item.root_cause)}</Badge>
               </Td>
               <Td>{formatInr(item.amount_at_risk)}</Td>
               <Td>

@@ -9,7 +9,7 @@ import {
   rejectApproval,
   type Approval,
 } from "@/lib/dashboard-api";
-import { formatInr } from "@/lib/format";
+import { formatInr, humanize } from "@/lib/format";
 
 export function ApprovalQueuePanel({
   refreshKey,
@@ -79,8 +79,8 @@ export function ApprovalQueuePanel({
             <Tr key={a.approval_id}>
               <Td className="font-mono text-xs">{a.case_id.slice(-8)}</Td>
               <Td>
-                {a.action_type}
-                {a.channel ? ` · ${a.channel}` : ""}
+                {humanize(a.action_type)}
+                {a.channel ? ` · ${humanize(a.channel)}` : ""}
               </Td>
               <Td>
                 <span className="font-medium">{formatInr(a.expected_value_inr)}</span>
