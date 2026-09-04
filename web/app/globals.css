@@ -30,7 +30,9 @@
   --color-neutral: #6b6f8c;
   --color-neutral-bg: #eceef5;
 
-  /* the ops-console rail */
+  /* the ops-console rail -- always dark, in both themes, on purpose (same
+     idea as an editor's activity bar staying dark regardless of the main
+     theme). Never redefined below. */
   --color-rail-bg: #0a0c16;
   --color-rail-bg-raised: #12152400;
   --color-rail-active: #161a30;
@@ -41,12 +43,69 @@
   --color-rail-accent: #7c8cff;
 }
 
+/* System "dark" preference, only when the viewer hasn't made an explicit
+   choice (no [data-theme] stamped) -- an explicit light choice always wins
+   over the OS setting. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-ink: #eef0fa;
+    --color-ink-soft: #c7c9e0;
+    --color-muted: #7d80a0;
+    --color-bg: #0a0c16;
+    --color-surface: #12142a;
+    --color-border: rgba(255, 255, 255, 0.09);
+    --color-accent: #8b93ff;
+    --color-accent-2: #2dd4bf;
+    --color-accent-soft: rgba(139, 147, 255, 0.14);
+
+    --color-good: #3ddc9a;
+    --color-good-bg: rgba(61, 220, 154, 0.13);
+    --color-bad: #ff8787;
+    --color-bad-bg: rgba(255, 135, 135, 0.13);
+    --color-warn: #ffc861;
+    --color-warn-bg: rgba(255, 200, 97, 0.13);
+    --color-info: #7db2ff;
+    --color-info-bg: rgba(125, 178, 255, 0.13);
+    --color-policy: #a78bfa;
+    --color-policy-bg: rgba(167, 139, 250, 0.14);
+    --color-neutral: #9ca3c4;
+    --color-neutral-bg: rgba(156, 163, 196, 0.12);
+  }
+}
+
+/* Explicit user choice (the toggle), wins in both directions regardless of
+   OS setting. */
+:root[data-theme="dark"] {
+  --color-ink: #eef0fa;
+  --color-ink-soft: #c7c9e0;
+  --color-muted: #7d80a0;
+  --color-bg: #0a0c16;
+  --color-surface: #12142a;
+  --color-border: rgba(255, 255, 255, 0.09);
+  --color-accent: #8b93ff;
+  --color-accent-2: #2dd4bf;
+  --color-accent-soft: rgba(139, 147, 255, 0.14);
+
+  --color-good: #3ddc9a;
+  --color-good-bg: rgba(61, 220, 154, 0.13);
+  --color-bad: #ff8787;
+  --color-bad-bg: rgba(255, 135, 135, 0.13);
+  --color-warn: #ffc861;
+  --color-warn-bg: rgba(255, 200, 97, 0.13);
+  --color-info: #7db2ff;
+  --color-info-bg: rgba(125, 178, 255, 0.13);
+  --color-policy: #a78bfa;
+  --color-policy-bg: rgba(167, 139, 250, 0.14);
+  --color-neutral: #9ca3c4;
+  --color-neutral-bg: rgba(156, 163, 196, 0.12);
+}
+
 * {
   border-color: var(--color-border);
 }
 
 html {
-  color-scheme: light;
+  color-scheme: light dark;
 }
 
 body {

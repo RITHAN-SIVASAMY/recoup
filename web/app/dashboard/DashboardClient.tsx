@@ -16,6 +16,7 @@ import { WorkQueuePanel } from "./WorkQueuePanel";
 import { Card } from "@/components/ui";
 import { CommandPalette } from "@/components/CommandPalette";
 import { NAV_ICONS, Sidebar, type NavItem } from "@/components/Sidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { exportUrl, fetchApprovals, fetchBatchSummary, fetchExceptionQueue } from "@/lib/dashboard-api";
 
 const SECTIONS: { id: string; label: string; description: string }[] = [
@@ -76,15 +77,18 @@ export function DashboardClient() {
         activeId={activeId}
         onSelect={setActiveId}
         footer={
-          <button
-            onClick={() => setPaletteOpen(true)}
-            className="flex w-full items-center justify-between rounded-lg border border-[var(--color-rail-border)] bg-white/[0.03] px-3 py-2 text-xs text-[var(--color-rail-muted)] transition hover:bg-white/[0.06] hover:text-[var(--color-rail-text)]"
-          >
-            <span>Jump to case…</span>
-            <kbd className="rounded border border-[var(--color-rail-border)] bg-black/30 px-1.5 py-0.5 font-mono text-[10px]">
-              ⌘K
-            </kbd>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="flex flex-1 items-center justify-between rounded-lg border border-[var(--color-rail-border)] bg-white/[0.03] px-3 py-2 text-xs text-[var(--color-rail-muted)] transition hover:bg-white/[0.06] hover:text-[var(--color-rail-text)]"
+            >
+              <span>Jump to case…</span>
+              <kbd className="rounded border border-[var(--color-rail-border)] bg-black/30 px-1.5 py-0.5 font-mono text-[10px]">
+                ⌘K
+              </kbd>
+            </button>
+            <ThemeToggle />
+          </div>
         }
       />
 
