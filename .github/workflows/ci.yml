@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { submodules: recursive }
+        with: { submodules: recursive, fetch-depth: 0 }  # gitleaks needs full history, not a shallow clone
       - uses: astral-sh/setup-uv@v3
       - run: uv sync --all-extras
       - run: uv run ruff check .
@@ -17,7 +17,7 @@ jobs:
       - run: uv run mypy src/recoup
       - run: uv run lint-imports
       - name: secret scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
