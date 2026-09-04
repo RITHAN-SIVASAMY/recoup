@@ -55,6 +55,10 @@ const _ACRONYMS: Record<string, string> = {
   ptp: "PTP",
   b2b: "B2B",
   cuped: "CUPED",
+  llm: "LLM",
+  api: "API",
+  sla: "SLA",
+  id: "ID",
 };
 
 /** Domain enums travel the wire as snake_case (`card_expired_or_invalid`,

@@ -11,6 +11,20 @@ const DIMENSION_LABEL: Record<string, string> = {
   value_band: "Value band",
 };
 
+// Domain-specific tokens that generic word-splitting mangles (10k_1l ->
+// "10k 1l", not "₹10k – ₹1L") or that read oddly verbatim (a "none" channel
+// bucket for actions that were never channel-specific in the first place).
+const KEY_LABEL: Record<string, string> = {
+  under_1k: "Under ₹1k",
+  "1k_10k": "₹1k – ₹10k",
+  "10k_1l": "₹10k – ₹1L",
+  none: "No channel",
+};
+
+function keyLabel(key: string): string {
+  return KEY_LABEL[key] ?? humanize(key);
+}
+
 export function BreakdownChart({ breakdowns }: { breakdowns: BreakdownRow[] }) {
   if (breakdowns.length === 0) {
     return <EmptyState>No per-segment breakdown in this batch yet.</EmptyState>;
@@ -49,9 +63,12 @@ export function BreakdownChart({ breakdowns }: { breakdowns: BreakdownRow[] }) {
               const positive = row.lift_pp >= 0;
               const color = positive ? "var(--color-good)" : "var(--color-bad)";
               return (
-                <div key={`${dimension}-${row.key}`} className="grid grid-cols-[120px_1fr_88px] items-center gap-3">
-                  <span className="truncate text-xs text-[var(--color-ink-soft)]" title={humanize(row.key)}>
-                    {humanize(row.key)}
+                <div
+                  key={`${dimension}-${row.key}`}
+                  className="grid grid-cols-[minmax(0,170px)_1fr_90px] items-center gap-3"
+                >
+                  <span className="text-xs leading-snug text-[var(--color-ink-soft)]">
+                    {keyLabel(row.key)}
                   </span>
                   <div className="relative h-5">
                     <div className="absolute inset-y-0 left-1/2 w-px bg-[var(--color-border)]" />
@@ -64,7 +81,7 @@ export function BreakdownChart({ breakdowns }: { breakdowns: BreakdownRow[] }) {
                         opacity: row.significant ? 1 : 0.35,
                         border: row.significant ? "none" : `1px dashed ${color}`,
                       }}
-                      title={`${row.key}: ${row.lift_pp >= 0 ? "+" : ""}${row.lift_pp.toFixed(1)}pp, p=${row.p_value.toFixed(3)}, n_t=${row.n_treated} n_c=${row.n_control}`}
+                      title={`${keyLabel(row.key)}: ${row.lift_pp >= 0 ? "+" : ""}${row.lift_pp.toFixed(1)}pp, p=${row.p_value.toFixed(3)}, n_t=${row.n_treated} n_c=${row.n_control}`}
                     />
                   </div>
                   <span className="text-right font-mono text-xs tabular-nums text-[var(--color-ink)]">

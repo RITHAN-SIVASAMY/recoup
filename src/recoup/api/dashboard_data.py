@@ -26,6 +26,7 @@ from pathlib import Path
 from recoup.audit.event_store import EventStore
 from recoup.domain.models import Case
 from recoup.economics.ev import expected_value
+from recoup.measurement.report import format_inr_whole
 from recoup.policy.categories import category_for
 from recoup.policy.schema import PolicyBundle
 
@@ -85,9 +86,10 @@ async def _work_queue_item(event_store: EventStore, case: Case) -> WorkQueueItem
     ev_events = [e for e in events if e.event_type == "ev.computed"]
     best_ev = max(ev_events, key=lambda e: Decimal(str(e.payload["ev_inr"]))) if ev_events else None
     uplift = float(scored.payload["uplift"])
-    segment = scored.payload.get("uplift_segment")
+    segment = str(scored.payload.get("uplift_segment") or "unscored").replace("_", " ")
     reason = (
-        f"{segment or 'unscored'} segment, {uplift:+.1%} uplift on ₹{case.amount_at_risk} at risk"
+        f"{segment} segment, {uplift:+.1%} uplift on "
+        f"{format_inr_whole(case.amount_at_risk)} at risk"
     )
     return WorkQueueItem(
         case_id=case.case_id,
