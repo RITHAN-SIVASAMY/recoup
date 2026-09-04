@@ -50,6 +50,7 @@ from recoup.audit.projection import project
 from recoup.audit.verify import verify_chain, verify_replay_equality
 from recoup.data.generate import generate_batch
 from recoup.data.simulate import resolution_probability, simulate_resolved
+from recoup.domain.ids import deterministic_ulid
 from recoup.domain.models import Actor, Cohort
 from recoup.economics.ev import price_ladder_step
 from recoup.execution.adapters.simulator import SimulatorChannelPort
@@ -280,8 +281,15 @@ async def run_batch(
         session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
         async def _ingest_one(intake: NormalizedIntake) -> str:
+            # A fixed seed must reproduce identical case IDs -- every
+            # downstream per-case RNG draw is keyed on the case id, so a
+            # `new_ulid()`-minted (wall-clock + OS entropy) id here would
+            # silently launder non-determinism into a "seeded" batch.
+            deterministic_case_id = deterministic_ulid(f"case:{seed}:{intake.provider_event_id}")
             async with session_factory() as session:
-                ingest_result = await ingest(session, event_store, intake)
+                ingest_result = await ingest(
+                    session, event_store, intake, case_id_override=deterministic_case_id
+                )
             return ingest_result.case_id
 
         case_ids = await _gather_bounded([_ingest_one(intake) for intake in gen_batch.intake])

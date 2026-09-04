@@ -1,5 +1,6 @@
 SHELL := /bin/bash
 SEED  ?= 42
+CASES ?= 2000  # 500 is under-powered for this system's true effect size (MDE ~18pp); 2000 gets MDE to ~9pp
 PHASE ?= 00
 
 .PHONY: help setup data train run demo replay verify chaos test lint types gate docx clean
@@ -26,7 +27,7 @@ run:        ## api + worker + web
 	docker compose up --build
 
 demo:       ## run the batch end to end and print the headline block
-	uv run python -m recoup.cli demo --seed $(SEED)
+	uv run python -m recoup.cli demo --seed $(SEED) --cases $(CASES)
 
 replay:     ## rebuild projections from the event log
 	uv run python -m recoup.cli replay

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 from pathlib import Path
 
 import typer
@@ -11,6 +12,15 @@ from recoup.audit.event_store import create_engine
 from recoup.audit.verify import verify_chain, verify_replay_equality
 from recoup.demo import run_batch
 from recoup.measurement.report import render_headline_block, to_json, to_markdown
+
+# The headline block prints ₹ and box-drawing characters; a stock Windows
+# console defaults to a legacy codepage (cp1252) that can't encode them and
+# crashes typer.echo. Force UTF-8 on stdout/stderr so `make demo` works on a
+# clean Windows machine without requiring PYTHONIOENCODING to be set first.
+if sys.platform == "win32":
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            _stream.reconfigure(encoding="utf-8")
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 

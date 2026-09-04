@@ -24,13 +24,21 @@ class IngestResult:
 
 
 async def ingest(
-    session: AsyncSession, event_store: EventStore, intake: NormalizedIntake
+    session: AsyncSession,
+    event_store: EventStore,
+    intake: NormalizedIntake,
+    *,
+    case_id_override: str | None = None,
 ) -> IngestResult:
+    """`case_id_override` exists only for the seeded synthetic-batch path
+    (`demo.py`), so that a fixed seed reproduces identical case IDs -- and
+    therefore identical downstream per-case RNG draws -- run to run. Real
+    ingestion never passes it and keeps minting genuinely random IDs."""
     case_id, is_new = await reserve_or_get_case_id(
         session,
         source=intake.source_type,
         provider_event_id=intake.provider_event_id,
-        new_case_id=new_ulid(),
+        new_case_id=case_id_override or new_ulid(),
     )
     await session.commit()
 
