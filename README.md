@@ -145,6 +145,7 @@ simulator — with exact things to click and what you should see.
 
 | Document | What it answers |
 |---|---|
+| [Plain-English guide](PLAIN-ENGLISH-GUIDE.md) | The jargon-free version — start here if the rest of this table looks intimidating |
 | [FRD](docs/01-FRD.md) | What it must do, refuse to do, and prove |
 | [Problem & differentiation](docs/02-PROBLEM-AND-DIFFERENTIATION.md) | Why anyone needs it |
 | [Architecture](docs/03-ARCHITECTURE.md) | How it fits together, and the trade-offs made on purpose |
