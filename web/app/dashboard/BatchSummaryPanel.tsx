@@ -68,6 +68,8 @@ export function BatchSummaryPanel({ refreshKey }: { refreshKey: number }) {
     );
   }
 
+  const significantHarm = report.significant && report.lift_pp < 0;
+
   return (
     <div className="animate-in space-y-4">
       <Card padded={false} className="overflow-hidden">
@@ -105,17 +107,25 @@ export function BatchSummaryPanel({ refreshKey }: { refreshKey: number }) {
               label="Incremental recovered"
               value={<AnimatedRupee value={report.incremental_inr} />}
               sub={`95% CI ${formatInr(report.ci_low_inr)} – ${formatInr(report.ci_high_inr)}`}
-              tone={report.significant ? "good" : "neutral"}
+              tone={significantHarm ? "bad" : report.significant ? "good" : "neutral"}
               size="lg"
             />
           </div>
         </div>
 
-        {!report.significant && (
-          <div className="border-t border-[var(--color-warn-bg)] bg-[var(--color-warn-bg)] px-5 py-2.5 text-sm text-[var(--color-warn)]">
-            <strong>Not statistically significant</strong> at this batch size — the MDE below is
-            the honest bound, not the number to lead with.
+        {significantHarm ? (
+          <div className="border-t border-[var(--color-bad-bg)] bg-[var(--color-bad-bg)] px-5 py-2.5 text-sm text-[var(--color-bad)]">
+            <strong>Statistically significant negative effect</strong> — recovery efforts are
+            measurably underperforming the control group at this batch size. This is a real
+            finding, not noise.
           </div>
+        ) : (
+          !report.significant && (
+            <div className="border-t border-[var(--color-warn-bg)] bg-[var(--color-warn-bg)] px-5 py-2.5 text-sm text-[var(--color-warn)]">
+              <strong>Not statistically significant</strong> at this batch size — the MDE below is
+              the honest bound, not the number to lead with.
+            </div>
+          )
         )}
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-5 border-t border-[var(--color-border)] px-5 py-4 sm:grid-cols-4 lg:grid-cols-6">
