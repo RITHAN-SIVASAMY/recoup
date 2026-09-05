@@ -69,7 +69,11 @@ async def _call_once(
         headers={"Authorization": f"Bearer {api_key}"},
         json={
             "model": get_settings().groq_model,
-            "max_tokens": 500,
+            "max_tokens": 1200,  # this model's hidden reasoning phase (not
+            # fully suppressed by reasoning_effort below on harder/longer
+            # case histories) can burn a small budget before ever writing
+            # the answer -- see docs/adr/0009's addendum.
+            "reasoning_effort": "none",
             "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": _load_system_prompt()},
