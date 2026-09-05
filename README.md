@@ -19,7 +19,7 @@ cd recoup && make setup && make demo
   <img src=".github/assets/overview.png" alt="Recoup dashboard — Overview tab showing the batch headline and work queue" width="100%">
 </p>
 
-**Jump to:** [What it does](#what-it-does) · [The proof](#the-proof) · [Why it's different](#why-it-is-different) · [Try it yourself](#try-it-yourself) · [Documentation](#documentation) · [Honest limitations](#honest-limitations)
+**Jump to:** [What it does](#what-it-does) · [The proof](#the-proof) · [Why it's different](#why-it-is-different) · [What the AI does — and doesn't](#what-the-ai-does--and-doesnt) · [Try it yourself](#try-it-yourself) · [Documentation](#documentation) · [Honest limitations](#honest-limitations)
 
 ---
 
@@ -60,12 +60,14 @@ quietly re-rolled until it looked better):
 
 ```
 RECOUP · BATCH b_seed42_2000 · seed 42 · 2000 cases
-At risk                        ₹ 17,36,12,264
-Raw recovered (treated)        ₹ 4,92,11,755    ← overstates our impact
-Incremental recovered          ₹ -51,79,409     (95% CI ₹ -1,29,40,473 – ₹ 25,81,655)
-Lift                           -4.3 pp          z = -1.31, p = 0.1909   *** NOT SIGNIFICANT ***
+At risk                        ₹ 17,36,12,265
+Raw recovered (treated)        ₹ 4,92,28,935    ← overstates our impact
+Incremental recovered          ₹ -46,48,530     (95% CI ₹ -1,23,37,789 – ₹ 30,40,729)
+Lift                           -3.9 pp          z = -1.18, p = 0.2361   *** NOT SIGNIFICANT ***
+                                n_t = 1736  n_c = 264  MDE = 9.2 pp
 Cost per ₹ recovered           undefined (no incremental recovery)
-Actions blocked by policy      388              Audit chain: VERIFIED · replay equality PASS
+Actions blocked by policy      388  (quiet_hours 267 · mandate 121)
+Audit chain: VERIFIED · replay equality PASS
 ```
 
 This is the actual, current output of `make demo` on the canonical seed — and it
@@ -78,6 +80,12 @@ measuring anything.** Reproduce it yourself: `git clone` → `make setup` →
 `make demo`. A second run reproduces the same case pool and cohort split exactly;
 the exact ₹ figure can drift a percent or two run to run for a documented reason —
 see [`TESTING_GUIDE.md`](TESTING_GUIDE.md).
+
+The dashboard doesn't just print this once — it colors itself honestly by the
+actual result. If a batch ever comes back *significant and negative* (a
+confirmed harm, not a null), the incremental-recovered tile turns red with an
+explicit warning instead of quietly saying nothing; "significant" was never
+allowed to mean "green."
 
 The dashboard's Insights tab slices that same result by root cause, channel,
 value band and uplift segment — the same z-test machinery as the headline
@@ -109,11 +117,40 @@ the actual event log afterward, not asserted on faith.
   <img src=".github/assets/chaos.png" alt="Recoup dashboard — What-if &amp; Chaos tab after running the Duplicate Webhook scenario live" width="100%">
 </p>
 
+The same tab has a **what-if simulator** next to the chaos control: replay the
+exact same historical batch under a different EV floor, channel cost, approval
+threshold or contact cap, and see how many cases would newly become uneconomic
+or newly require approval — before touching the real policy. It's labeled a
+*projection*, deliberately never a *measurement*, since a case's real-world
+counterfactual isn't something replaying a log can supply. The dashboard also
+ships light and dark themes (`ThemeToggle`, sidebar footer), defaulting to
+whatever the OS already prefers.
+
 ## The one architectural sentence
 
 > **The LLM proposes. Deterministic code disposes. The log remembers everything.**
 
 The authority boundary is written down as a table in [`docs/01-FRD.md` §11](docs/01-FRD.md) and enforced by an architecture test: no LLM call may decide whether an action is permitted, or execute one.
+
+## What the AI does — and doesn't
+
+This is the actual boundary the architecture test enforces, not a marketing simplification of it:
+
+| Capability | The LLM may | Deterministic code must |
+|---|---|---|
+| Classify a case's root cause | assist / explain | own the decision — a trained classifier, not the LLM |
+| Score uplift, compute expected value | **never** | own entirely |
+| Decide whether an action is permitted | **never** | own entirely — the policy engine, reading YAML |
+| Choose the channel and send time | **never** | own — a constrained bandit, arms limited to what policy allows |
+| Draft the words of a message | yes, schema-validated + safety-checked | approve, render, and actually dispatch it |
+| Run a voice call | yes, inside a bounded conversation graph | own the graph, every exit, and the recording |
+| Extract a promise-to-pay from a transcript | yes, into a strict schema | validate it, threshold it, route low-confidence ones to a human |
+| Answer "why did this happen?" | yes, from retrieved log entries only | enforce that every citation is real and force a refusal otherwise |
+| Send a message, attempt a charge, or retry a payment | **never** | own entirely |
+
+The three lines marked **never** are not aspirational — an architecture test fails the build if any LLM call path reaches them. Model failure (a timeout, a malformed response, a rate limit) is allowed to degrade *polish* — a plainer fallback message, a refused answer, a raw log dump instead of a cited summary. It is never allowed to degrade *safety*: nothing about who gets contacted, when, or whether an action is allowed to fire ever depends on an LLM call succeeding.
+
+Two different models are used, deliberately scoped: **Claude** drafts message copy, extracts promise-to-pay data, and runs the bounded voice-call graph — the paths with real safety/compliance stakes. **Groq** (a fast open-weight model) drafts grounded Q&A answers only, a path picked specifically because its citation-and-refusal enforcement lives entirely in deterministic code, not in the prompt — so swapping the model behind it never touches the authority boundary above. See [ADR-0009](docs/adr/0009-groq-grounded-qa.md).
 
 ## What we deliberately did not build
 
@@ -158,7 +195,7 @@ simulator — with exact things to click and what you should see.
 
 ## Stack
 
-Python 3.12 · FastAPI · Pydantic v2 · SQLAlchemy 2 · Postgres 16 · Redis · arq · LightGBM · SHAP · statsmodels · Claude (Anthropic API) · edge-tts + faster-whisper · Next.js 16 · Tailwind CSS · Docker Compose · GitHub Actions · Hypothesis
+Python 3.12 · FastAPI · Pydantic v2 · SQLAlchemy 2 · Postgres 16 · Redis · arq · LightGBM · SHAP · statsmodels · Claude (Anthropic API) · Groq (grounded Q&A only — [ADR-0009](docs/adr/0009-groq-grounded-qa.md)) · edge-tts + faster-whisper · Next.js 16 · Tailwind CSS · Docker Compose · GitHub Actions · Hypothesis
 
 Deliberately **not** used: an agent framework, a vector database, Kafka, microservices, Streamlit — each with a reason in [`docs/03-ARCHITECTURE.md` §12](docs/03-ARCHITECTURE.md).
 
