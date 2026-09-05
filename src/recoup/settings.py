@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     llm_timeout_seconds: int = 8
     llm_redaction_enabled: bool = True
 
+    # groq — grounded Q&A's drafter only (see docs/adr/0009-groq-grounded-qa.md);
+    # every other LLM path stays on Anthropic above
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.3-70b-versatile"
+
     # channels
     channel_mode: Literal["simulator", "live"] = "simulator"
     twilio_account_sid: str = ""

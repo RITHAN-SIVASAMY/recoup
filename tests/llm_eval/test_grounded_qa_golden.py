@@ -10,7 +10,9 @@ live model. Two gates, both explicit in the phase spec:
    missed refusal here means the model answered a question the log cannot
    support, which is the one failure mode this whole phase exists to catch.
 
-Gated on a live `ANTHROPIC_API_KEY`, same as `tests/llm_eval`'s other suites.
+Gated on a live `GROQ_API_KEY` — grounded Q&A's drafter is Groq, not
+Anthropic (docs/adr/0009-groq-grounded-qa.md); the other `tests/llm_eval`
+suites gate on `ANTHROPIC_API_KEY` instead.
 """
 
 from __future__ import annotations
@@ -34,9 +36,7 @@ from recoup.settings import get_settings
 
 pytestmark = [
     pytest.mark.llm_eval,
-    pytest.mark.skipif(
-        not get_settings().anthropic_api_key, reason="no ANTHROPIC_API_KEY configured"
-    ),
+    pytest.mark.skipif(not get_settings().groq_api_key, reason="no GROQ_API_KEY configured"),
 ]
 
 _GOLDEN_PATH = Path(__file__).parent / "grounded_qa.jsonl"
