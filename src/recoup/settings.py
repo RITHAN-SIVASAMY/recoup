@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     # groq — grounded Q&A's drafter only (see docs/adr/0009-groq-grounded-qa.md);
     # every other LLM path stays on Anthropic above
     groq_api_key: str = ""
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "qwen/qwen3.8-27b"
 
     # channels
     channel_mode: Literal["simulator", "live"] = "simulator"

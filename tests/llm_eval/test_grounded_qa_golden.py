@@ -17,6 +17,7 @@ suites gate on `ANTHROPIC_API_KEY` instead.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
@@ -66,7 +67,7 @@ _SCENARIOS: dict[str, list[tuple[str, dict[str, Any]]]] = {
         ("case.exception", {"reason": "manual review needed"}),
     ],
     "C": [
-        ("case.created", case_created_payload("mandate_lapse")),
+        ("case.created", case_created_payload("mandate_failure")),
         ("action.sent", {"channel": "email", "template": "reminder_1"}),
         ("customer.opted_out", {"channel": "email"}),
     ],
@@ -133,7 +134,14 @@ async def test_grounded_qa_citations_never_fabricated_and_refusal_rate_holds(
     fabricated: list[str] = []
     missed_refusals: list[str] = []
 
-    for case in cases:
+    for i, case in enumerate(cases):
+        if i:
+            # Groq's free tier caps at 8k tokens/min for this model, and each
+            # call costs ~1-1.5k tokens (system prompt + event log); firing
+            # 40 of these back to back hits 429s and every retry silently
+            # degrades, turning a real refusal-rate signal into rate-limit
+            # noise. This keeps the suite under that budget instead.
+            await asyncio.sleep(10)
         case_id, valid_event_ids = seeded[case.case_key]
         result = await ask(engine, case_id=case_id, question=case.question, now=_NOW)
 

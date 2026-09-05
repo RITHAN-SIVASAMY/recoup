@@ -83,7 +83,18 @@ async def _call_once(
     match = _JSON_OBJECT_RE.search(raw)
     if match is None:
         raise ValueError(f"no JSON object in model output: {raw!r}")
-    return GroundedAnswer.model_validate(json.loads(match.group(0)))
+    data = json.loads(match.group(0))
+    # audit/qa.py requires the structured `citations` list to match the bare
+    # event IDs inside the answer's own [event:...] markers, exactly -- some
+    # Groq-hosted models echo citations pre-wrapped as "event:<id>" instead
+    # of the bare id, which would otherwise make every correct answer look
+    # like a hallucination and silently degrade it.
+    if isinstance(data.get("citations"), list):
+        data["citations"] = [
+            c.removeprefix("event:").strip("[]") if isinstance(c, str) else c
+            for c in data["citations"]
+        ]
+    return GroundedAnswer.model_validate(data)
 
 
 async def answer_grounded_question(
