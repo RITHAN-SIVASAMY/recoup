@@ -19,7 +19,9 @@ export function ApprovalQueuePanel({
   onChanged: () => void;
 }) {
   const [approvals, setApprovals] = useState<Approval[] | null>(null);
-  const [lastStagedActionId, setLastStagedActionId] = useState<string | null>(null);
+  const [lastStaged, setLastStaged] = useState<{ stagedActionId: string; approval: Approval } | null>(
+    null,
+  );
   const [busy, setBusy] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,14 +34,14 @@ export function ApprovalQueuePanel({
     };
   }, [refreshKey]);
 
-  async function act(approvalId: string, action: "grant" | "reject") {
-    setBusy(approvalId);
+  async function act(approval: Approval, action: "grant" | "reject") {
+    setBusy(approval.approval_id);
     try {
       if (action === "grant") {
-        const result = await grantApproval(approvalId);
-        setLastStagedActionId(result.staged_action_id);
+        const result = await grantApproval(approval.approval_id);
+        setLastStaged({ stagedActionId: result.staged_action_id, approval });
       } else {
-        await rejectApproval(approvalId);
+        await rejectApproval(approval.approval_id);
       }
       onChanged();
     } finally {
@@ -48,11 +50,11 @@ export function ApprovalQueuePanel({
   }
 
   async function cancelLastStaged() {
-    if (!lastStagedActionId) return;
-    setBusy(lastStagedActionId);
+    if (!lastStaged) return;
+    setBusy(lastStaged.stagedActionId);
     try {
-      await cancelStagedAction(lastStagedActionId);
-      setLastStagedActionId(null);
+      await cancelStagedAction(lastStaged.stagedActionId);
+      setLastStaged(null);
       onChanged();
     } finally {
       setBusy(null);
@@ -61,10 +63,20 @@ export function ApprovalQueuePanel({
 
   return (
     <Card title="Approval queue" description="Actions above the threshold, awaiting sign-off">
-      {lastStagedActionId && (
+      {lastStaged && (
         <div className="mb-4 flex items-center justify-between rounded-xl bg-[var(--color-info-bg)] px-4 py-3 text-sm text-[var(--color-info)]">
-          <span>Action staged — still inside its undo window.</span>
-          <Button variant="secondary" size="sm" onClick={cancelLastStaged} disabled={busy === lastStagedActionId}>
+          <span>
+            Staged for case <span className="font-mono">{lastStaged.approval.case_id.slice(-8)}</span> —{" "}
+            {humanize(lastStaged.approval.action_type)}
+            {lastStaged.approval.channel ? ` · ${humanize(lastStaged.approval.channel)}` : ""}, still
+            inside its undo window.
+          </span>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={cancelLastStaged}
+            disabled={busy === lastStaged.stagedActionId}
+          >
             Cancel before it sends
           </Button>
         </div>
@@ -91,13 +103,13 @@ export function ApprovalQueuePanel({
               <Td muted>{a.reason}</Td>
               <Td>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => act(a.approval_id, "grant")} disabled={busy === a.approval_id}>
+                  <Button size="sm" onClick={() => act(a, "grant")} disabled={busy === a.approval_id}>
                     Approve
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => act(a.approval_id, "reject")}
+                    onClick={() => act(a, "reject")}
                     disabled={busy === a.approval_id}
                   >
                     Reject
